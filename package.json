@@ -127,11 +127,6 @@
         "from": ".next/standalone",
         "to": "app",
         "filter": ["**/*"]
-      },
-      {
-        "from": ".next/static",
-        "to": "app/.next/static",
-        "filter": ["**/*"]
       }
     ],
     "npmRebuild": false,
