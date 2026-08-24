@@ -18,7 +18,7 @@ node_modules
 /out/
 
 # production
-/build
+# (Note: /build is NOT gitignored — it contains app icons needed by electron-builder)
 
 # misc
 .DS_Store
