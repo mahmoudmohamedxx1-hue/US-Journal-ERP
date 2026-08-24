@@ -1,0 +1,71 @@
+{
+  "totalEntries": 1759,
+  "totalDebit": 26215400.58,
+  "totalCredit": 26215400.58,
+  "monthsCovered": 12,
+  "year": 2026,
+  "currency": "EGP",
+  "companyName": "US Holdings - شركة",
+  "entriesByMonth": {
+    "1": {
+      "count": 144,
+      "debit": 24994590.0,
+      "credit": 24994590.0
+    },
+    "2": {
+      "count": 147,
+      "debit": 15130.0,
+      "credit": 15130.0
+    },
+    "3": {
+      "count": 147,
+      "debit": 450000.0,
+      "credit": 450000.0
+    },
+    "4": {
+      "count": 147,
+      "debit": 56090.0,
+      "credit": 56090.0
+    },
+    "5": {
+      "count": 147,
+      "debit": 347900.0,
+      "credit": 347900.0
+    },
+    "6": {
+      "count": 147,
+      "debit": 162148.0,
+      "credit": 162148.0
+    },
+    "7": {
+      "count": 147,
+      "debit": 189542.58,
+      "credit": 189542.58
+    },
+    "8": {
+      "count": 147,
+      "debit": 0.0,
+      "credit": 0.0
+    },
+    "9": {
+      "count": 146,
+      "debit": 0.0,
+      "credit": 0.0
+    },
+    "10": {
+      "count": 147,
+      "debit": 0.0,
+      "credit": 0.0
+    },
+    "11": {
+      "count": 147,
+      "debit": 0.0,
+      "credit": 0.0
+    },
+    "12": {
+      "count": 146,
+      "debit": 0.0,
+      "credit": 0.0
+    }
+  }
+}

@@ -1,0 +1,2538 @@
+[
+  {
+    "code": "1",
+    "nameAr": "الاصول",
+    "nameEn": "Assets",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "11",
+    "nameAr": "الاصول الثابتة",
+    "nameEn": "Fixed Assets",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "11001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11005",
+    "nameAr": "اجهزة كمبيوتر وطابعات",
+    "nameEn": "Computers & Printers",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "11010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12",
+    "nameAr": "أصول غير ملموسة",
+    "nameEn": "Intangible Assets",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "12001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "12010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13",
+    "nameAr": "مشروعات تحت التنفيذ",
+    "nameEn": "Projects Under Construction",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "13001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "13010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14",
+    "nameAr": "أصول أخري طويلة الأجل",
+    "nameEn": "Other Long-Term Assets",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "14001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "14010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15",
+    "nameAr": "المخزون",
+    "nameEn": "Inventory",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "15001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "15010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16",
+    "nameAr": "عملاء و أوراق قبض",
+    "nameEn": "Customers & Receivables",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "16001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16011",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16012",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "16020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17",
+    "nameAr": "مدينون و أرصدة مدينة أخرى",
+    "nameEn": "Debit & Other Debit Balances",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "17001",
+    "nameAr": "عهدة ا- عمر داوود",
+    "nameEn": "Custody - Omar Dawood",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17002",
+    "nameAr": "مصاريف مدفوعه مقدما",
+    "nameEn": "Prepaid Expenses",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17011",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17012",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "17020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18",
+    "nameAr": "أصول ضريبية جارية",
+    "nameEn": "أصول ضريبية جارية",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "18001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "18010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19",
+    "nameAr": "النقدية وما في حكمها",
+    "nameEn": "النقدية وما في حكمها",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "19001",
+    "nameAr": "الخزينة",
+    "nameEn": "الخزينة",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19002",
+    "nameAr": "حساب الشركة بنك CIB",
+    "nameEn": "حساب الشركة بنك CIB",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19003",
+    "nameAr": "حساب الشركة البنك الاهلي",
+    "nameEn": "حساب الشركة البنك الاهلي",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "19010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "2",
+    "nameAr": "الالتزامات",
+    "nameEn": "الالتزامات",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "21",
+    "nameAr": "الموردين وأوراق الدفع",
+    "nameEn": "الموردين وأوراق الدفع",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "21001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21011",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21012",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "21020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22",
+    "nameAr": "دائنون وأرصدة دائنة أخري",
+    "nameEn": "دائنون وأرصدة دائنة أخري",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "22001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22011",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22012",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "22020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23",
+    "nameAr": "المعاملات مع الأطراف ذات العلاقة",
+    "nameEn": "المعاملات مع الأطراف ذات العلاقة",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "23001",
+    "nameAr": "ا.عمر داوود",
+    "nameEn": "ا.عمر داوود",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23002",
+    "nameAr": "ا.داليا عبدالمنعم",
+    "nameEn": "ا.داليا عبدالمنعم",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23003",
+    "nameAr": "م.مروة السواح",
+    "nameEn": "م.مروة السواح",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23004",
+    "nameAr": "ا.سهير محمود",
+    "nameEn": "ا.سهير محمود",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "23010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24",
+    "nameAr": "مخصصات",
+    "nameEn": "Provisions",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "24001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "24010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25",
+    "nameAr": "مجمع أهلاك الأصول الثابتة",
+    "nameEn": "مجمع أهلاك الأصول الثابتة",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "25001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "25010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26",
+    "nameAr": "مجمع أستهلاك الأصول غير الملموسة",
+    "nameEn": "مجمع أستهلاك الأصول غير الملموسة",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "26001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "26010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27",
+    "nameAr": "إلتزامات ضريبية جارية",
+    "nameEn": "إلتزامات ضريبية جارية",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "27001",
+    "nameAr": "ضريبة الخصم والتحصيل",
+    "nameEn": "ضريبة الخصم والتحصيل",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "27010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28",
+    "nameAr": "حقوق الملكية",
+    "nameEn": "Equity",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "28001",
+    "nameAr": "رائس المال",
+    "nameEn": "رائس المال",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28002",
+    "nameAr": "جاري شركاء",
+    "nameEn": "جاري شركاء",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "28010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "3",
+    "nameAr": "المصروفات",
+    "nameEn": "Expenses",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "31",
+    "nameAr": "المصروفات العمومية و الإدارية",
+    "nameEn": "المصروفات العمومية و الإدارية",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "31001",
+    "nameAr": "مصاريف تأسيس",
+    "nameEn": "مصاريف تأسيس",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31002",
+    "nameAr": "مصارف الايجار",
+    "nameEn": "مصارف الايجار",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31003",
+    "nameAr": "مصاريف انتقالات ومواصلات",
+    "nameEn": "مصاريف انتقالات ومواصلات",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31004",
+    "nameAr": "مصاريف ضيافة",
+    "nameEn": "مصاريف ضيافة",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31005",
+    "nameAr": "مصاريف اتصالات وبريد الكتروني",
+    "nameEn": "مصاريف اتصالات وبريد الكتروني",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31006",
+    "nameAr": "مصاريف بنكية وعمولات",
+    "nameEn": "مصاريف بنكية وعمولات",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31007",
+    "nameAr": "الرواتب والأجور",
+    "nameEn": "الرواتب والأجور",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31008",
+    "nameAr": "رسوم حكومية",
+    "nameEn": "رسوم حكومية",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31009",
+    "nameAr": "ادوات كتابية وطباعة",
+    "nameEn": "ادوات كتابية وطباعة",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31010",
+    "nameAr": "مستلزمات اجهزة كمبيوتر",
+    "nameEn": "مستلزمات اجهزة كمبيوتر",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31011",
+    "nameAr": "شهدات جودة",
+    "nameEn": "شهدات جودة",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31012",
+    "nameAr": "استشارات",
+    "nameEn": "استشارات",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "31020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32",
+    "nameAr": "تكاليف النشاط",
+    "nameEn": "تكاليف النشاط",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "32001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32011",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32012",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32013",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32014",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32015",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32016",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32017",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32018",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32019",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "32020",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33",
+    "nameAr": "مصروفات البيع والتوزيع",
+    "nameEn": "مصروفات البيع والتوزيع",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "33001",
+    "nameAr": "داعية واعلان",
+    "nameEn": "داعية واعلان",
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "33010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34",
+    "nameAr": "مصروفات أخري",
+    "nameEn": "مصروفات أخري",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "34001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "34010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "4",
+    "nameAr": "الايرادات",
+    "nameEn": "الايرادات",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "41",
+    "nameAr": "ايرادات النشاط",
+    "nameEn": "ايرادات النشاط",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "41001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "41010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "42",
+    "nameAr": "ايرادات أخرى",
+    "nameEn": "ايرادات أخرى",
+    "level": 1,
+    "parent": null,
+    "type": "main"
+  },
+  {
+    "code": "421001",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421002",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421003",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421004",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421005",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421006",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421007",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421008",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421009",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  },
+  {
+    "code": "421010",
+    "nameAr": "",
+    "nameEn": null,
+    "level": 3,
+    "parent": null,
+    "type": "detail"
+  }
+]

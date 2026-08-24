@@ -1,0 +1,296 @@
+[
+  {
+    "label": "الأصول",
+    "labelEn": "الأصول",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "الاصول طويلة الاجل",
+    "labelEn": "الاصول طويلة الاجل",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "الأصول الثابتة",
+    "labelEn": "الأصول الثابتة",
+    "note": "-4",
+    "currentYear": 19980.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أصول غير ملموسة",
+    "labelEn": "Intangible Assets",
+    "note": "-5",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مشروعات تحت التنفيذ",
+    "labelEn": "Projects Under Construction",
+    "note": "-6",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أصول أخري طويلة الأجل",
+    "labelEn": "Other Long-Term Assets",
+    "note": "-7",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أجمالي الاصول طويلة الاجل",
+    "labelEn": "أجمالي الاصول طويلة الاجل",
+    "note": null,
+    "currentYear": 19980.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الاصول المتداولة",
+    "labelEn": "الاصول المتداولة",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "المخزون",
+    "labelEn": "Inventory",
+    "note": "-8",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "عملاء و أوراق قبض",
+    "labelEn": "Customers & Receivables",
+    "note": "-9",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مدينون و أرصدة مدينة أخري",
+    "labelEn": "مدينون و أرصدة مدينة أخري",
+    "note": "-10",
+    "currentYear": 50883.33,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مستحق  من أطراف ذات علاقة",
+    "labelEn": "مستحق  من أطراف ذات علاقة",
+    "note": "-11",
+    "currentYear": 7335000.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أصول ضريبة جارية",
+    "labelEn": "Current Tax Assets",
+    "note": "-12",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "النقدية بالخزينة ولدي البنوك",
+    "labelEn": "Cash & Cash Equivalents",
+    "note": "-13",
+    "currentYear": 2373526.71,
+    "previousYear": 0.0
+  },
+  {
+    "label": "اجمالى الاصول المتداولة",
+    "labelEn": "اجمالى الاصول المتداولة",
+    "note": null,
+    "currentYear": 9759410.04,
+    "previousYear": 0.0
+  },
+  {
+    "label": "اجمالى الاصول",
+    "labelEn": "اجمالى الاصول",
+    "note": null,
+    "currentYear": 9779390.04,
+    "previousYear": 0.0
+  },
+  {
+    "label": "حقوق الملكية والألتزامات",
+    "labelEn": "حقوق الملكية والألتزامات",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "حقوق الملكية",
+    "labelEn": "Equity",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "راس المال المصدر والمدفوع",
+    "labelEn": "راس المال المصدر والمدفوع",
+    "note": "-14",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أحتياطي قانوني",
+    "labelEn": "أحتياطي قانوني",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "ارباح مرحلة",
+    "labelEn": "ارباح مرحلة",
+    "note": "-15",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "إجمالي حقوق الملكية",
+    "labelEn": "إجمالي حقوق الملكية",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "التزامات طويلة الاجل",
+    "labelEn": "التزامات طويلة الاجل",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "أوراق دفع طوبلة الأجل",
+    "labelEn": "أوراق دفع طوبلة الأجل",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "ضرائب مؤجلة",
+    "labelEn": "ضرائب مؤجلة",
+    "note": "-16",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "إلتزامات حق إنتفاع - طويلة الاجل",
+    "labelEn": "إلتزامات حق إنتفاع - طويلة الاجل",
+    "note": "-17",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "أجمالي التزامات طويلة الاجل",
+    "labelEn": "أجمالي التزامات طويلة الاجل",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الالتزامات المتداولة",
+    "labelEn": "الالتزامات المتداولة",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "المخصصات",
+    "labelEn": "المخصصات",
+    "note": "-18",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "تسهيلات إئتمانية",
+    "labelEn": "تسهيلات إئتمانية",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "إلتزامات حق إنتفاع - قصيرة الاجل",
+    "labelEn": "إلتزامات حق إنتفاع - قصيرة الاجل",
+    "note": "-19",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "المستحق إلي الأطراف ذات العلاقة",
+    "labelEn": "المستحق إلي الأطراف ذات العلاقة",
+    "note": "-20",
+    "currentYear": -7335000.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "إلتزامات ضريبية جارية",
+    "labelEn": "إلتزامات ضريبية جارية",
+    "note": "-21",
+    "currentYear": 1227.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الموردين وأوراق الدفع",
+    "labelEn": "الموردين وأوراق الدفع",
+    "note": "-22",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "دائنون و أرصدة دائنة أخري",
+    "labelEn": "دائنون و أرصدة دائنة أخري",
+    "note": "-23",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "اجمالى الالتزامات المتداولة",
+    "labelEn": "اجمالى الالتزامات المتداولة",
+    "note": null,
+    "currentYear": -7333773.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "إجمالي الإلتزامات",
+    "labelEn": "إجمالي الإلتزامات",
+    "note": null,
+    "currentYear": -7333773.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "اجمالى حقوق الملكية والألتزامات",
+    "labelEn": "اجمالى حقوق الملكية والألتزامات",
+    "note": null,
+    "currentYear": -7333773.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الايضاحات من ..... إلي ........ متممه للقوائم المالية وتقرأ معها",
+    "labelEn": "الايضاحات من ..... إلي ........ متممه للقوائم المالية وتقرأ معها",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "تقرير مراقب الحسابات مرفق",
+    "labelEn": "تقرير مراقب الحسابات مرفق",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "المدير المالي",
+    "labelEn": "المدير المالي",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "...........",
+    "labelEn": "...........",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  }
+]

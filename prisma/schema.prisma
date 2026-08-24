@@ -1,0 +1,417 @@
+// Prisma schema for US Journal ERP — production-ready accounting system
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================
+// Multi-tenant core
+// ============================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  taxId       String?
+  currency    String   @default("USD")
+  baseCurrency String  @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users        User[]
+  memberships  Membership[]
+  accounts     Account[]
+  fiscalYears  FiscalYear[]
+  journals     Journal[]
+  vendors      Vendor[]
+  customers    Customer[]
+  bankAccounts BankAccount[]
+  taxCodes     TaxCode[]
+  departments  Department[]
+  locations    Location[]
+  projects     Project[]
+  auditLogs    AuditLog[]
+}
+
+model User {
+  id            String   @id @default(cuid())
+  organizationId String
+  email         String   @unique
+  name          String
+  passwordHash  String   @default("demo")
+  role          String   @default("Viewer")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  memberships  Membership[]
+  journalsCreated   Journal[]      @relation("JournalCreatedBy")
+  journalsSubmitted Journal[]      @relation("JournalSubmittedBy")
+  journalsApproved Journal[]      @relation("JournalApprovedBy")
+  journalsPosted    Journal[]      @relation("JournalPostedBy")
+  approvals         JournalApproval[] @relation("JournalApprovals")
+  auditLogs    AuditLog[]
+}
+
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String   @default("Viewer")
+  createdAt      DateTime @default(now())
+
+  user          User         @relation(fields: [userId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+}
+
+// ============================
+// Chart of Accounts
+// ============================
+
+model Account {
+  id              String   @id @default(cuid())
+  organizationId  String
+  code            String
+  name            String
+  accountType     String   // Asset, Liability, Equity, Revenue, Expense
+  subType         String?  // e.g. "Current Asset", "Long-term Liability"
+  parentId        String?
+  normalBalance   String   @default("Debit") // Debit or Credit
+  taxBehavior     String?  // Taxable, Non-taxable, etc.
+  active          Boolean  @default(true)
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  parent       Account?        @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children     Account[]       @relation("AccountHierarchy")
+  journalLines JournalLine[]
+
+  @@unique([organizationId, code])
+}
+
+// ============================
+// Fiscal Calendar
+// ============================
+
+model FiscalYear {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String   // e.g. "FY 2026"
+  startDate      DateTime
+  endDate        DateTime
+  status         String   @default("Open") // Open, Closed
+  createdAt      DateTime @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  periods       FiscalPeriod[]
+}
+
+model FiscalPeriod {
+  id           String   @id @default(cuid())
+  fiscalYearId String
+  name         String   // e.g. "January 2026"
+  periodNumber Int
+  startDate    DateTime
+  endDate      DateTime
+  status       String   @default("Open") // Open, Closed, Locked
+  closedAt     DateTime?
+  closedById   String?
+
+  fiscalYear FiscalYear @relation(fields: [fiscalYearId], references: [id])
+  journals  Journal[]
+}
+
+// ============================
+// Journal Entries (the heart of the GL)
+// ============================
+
+model Journal {
+  id              String   @id @default(cuid())
+  organizationId  String
+  journalNumber   String   @unique
+  journalDate     DateTime
+  postingDate     DateTime?
+  fiscalPeriodId  String?
+  source          String?  // Manual, AP, AR, Payroll, etc.
+  reference       String?
+  description     String?
+  currency        String   @default("USD")
+  exchangeRate    Float    @default(1.0)
+  status          String   @default("Draft") // Draft, Submitted, Under Review, Approved, Rejected, Posted, Reversed
+  reversalOfId    String?
+  totalDebit      Float    @default(0)
+  totalCredit     Float    @default(0)
+  createdById     String
+  submittedById   String?
+  approvedById    String?
+  postedById      String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  postedAt        DateTime?
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  fiscalPeriod FiscalPeriod? @relation(fields: [fiscalPeriodId], references: [id])
+  lines        JournalLine[]
+  approvals    JournalApproval[]
+  attachments  JournalAttachment[]
+  reversalOf   Journal?       @relation("JournalReversal", fields: [reversalOfId], references: [id])
+  reversedBy   Journal[]      @relation("JournalReversal")
+  createdBy    User            @relation("JournalCreatedBy", fields: [createdById], references: [id])
+  submittedBy  User?           @relation("JournalSubmittedBy", fields: [submittedById], references: [id])
+  approvedBy   User?           @relation("JournalApprovedBy", fields: [approvedById], references: [id])
+  postedBy     User?           @relation("JournalPostedBy", fields: [postedById], references: [id])
+}
+
+model JournalLine {
+  id            String   @id @default(cuid())
+  journalId     String
+  lineNumber    Int
+  accountId     String
+  description   String?
+  debit         Float    @default(0)
+  credit        Float    @default(0)
+  taxCodeId     String?
+  departmentId  String?
+  locationId    String?
+  projectId     String?
+  customerId    String?
+  vendorId      String?
+  dueDate       DateTime?
+
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  account   Account  @relation(fields: [accountId], references: [id])
+  vendor    Vendor?  @relation(fields: [vendorId], references: [id])
+  customer  Customer? @relation(fields: [customerId], references: [id])
+}
+
+model JournalApproval {
+  id         String   @id @default(cuid())
+  journalId  String
+  action     String   // Submitted, Approved, Rejected, Posted, Reversed
+  byUserId   String
+  comment    String?
+  at         DateTime @default(now())
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  byUser  User    @relation("JournalApprovals", fields: [byUserId], references: [id])
+}
+
+model JournalAttachment {
+  id         String   @id @default(cuid())
+  journalId  String
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  url        String
+  uploadedAt DateTime @default(now())
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+}
+
+// ============================
+// Vendors / Customers (AP / AR)
+// ============================
+
+model Vendor {
+  id             String   @id @default(cuid())
+  organizationId String
+  vendorNumber   String
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  taxId          String?
+  paymentTerms   String?  // e.g. "Net 30"
+  currency       String   @default("USD")
+  active         Boolean  @default(true)
+  balance        Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bills        Bill[]
+  journalLines JournalLine[]
+}
+
+model Bill {
+  id             String   @id @default(cuid())
+  organizationId String
+  vendorId       String
+  billNumber     String
+  billDate       DateTime
+  dueDate        DateTime
+  amount         Float
+  amountPaid     Float    @default(0)
+  status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
+  description    String?
+  createdAt      DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+}
+
+model Customer {
+  id             String   @id @default(cuid())
+  organizationId String
+  customerNumber String
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  taxId          String?
+  paymentTerms   String?
+  currency       String   @default("USD")
+  active         Boolean  @default(true)
+  balance        Float    @default(0)
+  creditLimit    Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoices     Invoice[]
+  journalLines JournalLine[]
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  organizationId String
+  customerId     String
+  invoiceNumber  String
+  invoiceDate    DateTime
+  dueDate        DateTime
+  amount         Float
+  amountPaid     Float    @default(0)
+  status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
+  description    String?
+  createdAt      DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+// ============================
+// Banking
+// ============================
+
+model BankAccount {
+  id             String   @id @default(cuid())
+  organizationId String
+  accountName    String
+  bankName       String?
+  accountNumber  String
+  accountType    String   @default("Checking") // Checking, Savings, Cash
+  currency       String   @default("USD")
+  balance        Float    @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  transactions BankTransaction[]
+}
+
+model BankTransaction {
+  id             String   @id @default(cuid())
+  bankAccountId  String
+  date           DateTime
+  amount         Float
+  type           String   // Credit (in), Debit (out)
+  description    String?
+  reference      String?
+  reconciled     Boolean  @default(false)
+  reconciledAt   DateTime?
+  journalId      String?
+  createdAt      DateTime @default(now())
+
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
+}
+
+// ============================
+// Tax
+// ============================
+
+model TaxCode {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  rate           Float    // e.g. 0.14 for 14%
+  jurisdiction   String?
+  taxType        String   @default("VAT") // VAT, Sales Tax, GST
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ============================
+// Dimensions
+// ============================
+
+model Department {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Location {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  active         Boolean  @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ============================
+// Audit Log
+// ============================
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  action         String   // CREATE_JOURNAL, SUBMIT, APPROVE, POST, REVERSE, etc.
+  entityType     String   // Journal, Account, User, etc.
+  entityId       String?
+  description    String
+  metadata       String?  // JSON
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+}

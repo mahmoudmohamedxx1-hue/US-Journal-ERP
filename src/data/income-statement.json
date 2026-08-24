@@ -1,0 +1,163 @@
+[
+  {
+    "label": "أيرادات النشاط",
+    "labelEn": "أيرادات النشاط",
+    "note": "-24",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": ": (يخصم)",
+    "labelEn": ": (يخصم)",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "تكلفة النشاط",
+    "labelEn": "تكلفة النشاط",
+    "note": "-25",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مجمل الربح",
+    "labelEn": "مجمل الربح",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "يضاف (يخصم) :",
+    "labelEn": "يضاف (يخصم) :",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "إيرادات أخري",
+    "labelEn": "إيرادات أخري",
+    "note": "-26",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "المصروفات العمومية والأدارية",
+    "labelEn": "المصروفات العمومية والأدارية",
+    "note": "-27",
+    "currentYear": -196836.96,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مصروفات البيع والتسويق",
+    "labelEn": "مصروفات البيع والتسويق",
+    "note": "-28",
+    "currentYear": -25000.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مصروفات أخري",
+    "labelEn": "مصروفات أخري",
+    "note": "-29",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "ناتج أنشطة التشغيل",
+    "labelEn": "ناتج أنشطة التشغيل",
+    "note": null,
+    "currentYear": -221836.96,
+    "previousYear": 0.0
+  },
+  {
+    "label": "فروق تقييم عملة",
+    "labelEn": "فروق تقييم عملة",
+    "note": "-30",
+    "currentYear": 0.0,
+    "previousYear": 0
+  },
+  {
+    "label": "فوائد دائنة",
+    "labelEn": "Credit Interest",
+    "note": "-31",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "مصروفات تمويلية",
+    "labelEn": "مصروفات تمويلية",
+    "note": "-32",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "ناتج أنشطة التمويل",
+    "labelEn": "ناتج أنشطة التمويل",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "(خسائر) رأسمالية",
+    "labelEn": "(خسائر) رأسمالية",
+    "note": "-33",
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "صافى أرباح العام قبل الضريبة",
+    "labelEn": "صافى أرباح العام قبل الضريبة",
+    "note": null,
+    "currentYear": -221836.96,
+    "previousYear": 0.0
+  },
+  {
+    "label": "ضرائب الدخل والتوزيعات",
+    "labelEn": "ضرائب الدخل والتوزيعات",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الضرائب المؤجلة",
+    "labelEn": "الضرائب المؤجلة",
+    "note": null,
+    "currentYear": 0.0,
+    "previousYear": 0.0
+  },
+  {
+    "label": "صافى أرباح العام بعد الضريبة",
+    "labelEn": "صافى أرباح العام بعد الضريبة",
+    "note": null,
+    "currentYear": -221836.96,
+    "previousYear": 0.0
+  },
+  {
+    "label": "النصيب الأساسي والمخفض للسهم في الأرباح",
+    "labelEn": "النصيب الأساسي والمخفض للسهم في الأرباح",
+    "note": null,
+    "currentYear": -221836.96,
+    "previousYear": 0.0
+  },
+  {
+    "label": "الايضاحات من ..... إلي ........ متممه للقوائم المالية وتقرأ معها",
+    "labelEn": "الايضاحات من ..... إلي ........ متممه للقوائم المالية وتقرأ معها",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": "المدير المالي",
+    "labelEn": "المدير المالي",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  },
+  {
+    "label": ".............",
+    "labelEn": ".............",
+    "note": null,
+    "currentYear": 0,
+    "previousYear": 0
+  }
+]
