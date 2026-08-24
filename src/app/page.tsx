@@ -4,6 +4,7 @@ import * as React from 'react'
 import { AppShell } from '@/components/erp/app-shell'
 import { useErpStore } from '@/lib/erp-store'
 import { LoginView } from '@/components/erp/views/login'
+import { SetupWizard } from '@/components/erp/views/setup-wizard'
 import { DashboardView } from '@/components/erp/views/dashboard'
 import { ChartOfAccountsView } from '@/components/erp/views/chart-of-accounts'
 import { JournalRegisterView } from '@/components/erp/views/journal-register'
@@ -25,6 +26,8 @@ interface AuthUser {
   role: string
 }
 
+type AppPhase = 'bootstrapping' | 'needs-setup' | 'login' | 'authenticated'
+
 // Lightweight context so child components (AppShell) can read the current user.
 export const AuthContext = React.createContext<{
   user: AuthUser
@@ -39,32 +42,69 @@ export function useAuth() {
 
 export default function Home() {
   const view = useErpStore((s) => s.view)
+  const [phase, setPhase] = React.useState<AppPhase>('bootstrapping')
   const [user, setUser] = React.useState<AuthUser | null>(null)
-  const [bootstrapping, setBootstrapping] = React.useState(true)
 
-  // On mount, check if already authenticated (cookie-based session)
+  // On mount: check if database needs setup, then check auth
   React.useEffect(() => {
     let cancelled = false
-    fetch('/api/auth/me')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
+
+    async function bootstrap() {
+      // Step 1: Check if setup is needed (DB empty?)
+      try {
+        const setupRes = await fetch('/api/setup/status')
+        const setupData = await setupRes.json()
         if (cancelled) return
-        if (d?.user) setUser(d.user)
-      })
-      .catch(() => {})
-      .finally(() => !cancelled && setBootstrapping(false))
-    return () => {
-      cancelled = true
+        if (setupData.needsSetup) {
+          setPhase('needs-setup')
+          return
+        }
+      } catch {
+        // If setup/status fails, fall through to auth check
+      }
+
+      // Step 2: Check if already authenticated
+      try {
+        const meRes = await fetch('/api/auth/me')
+        if (cancelled) return
+        if (meRes.ok) {
+          const meData = await meRes.json()
+          if (meData?.user) {
+            setUser(meData.user)
+            setPhase('authenticated')
+            return
+          }
+        }
+      } catch {
+        // ignore
+      }
+      if (cancelled) return
+      setPhase('login')
     }
+
+    bootstrap()
+    return () => { cancelled = true }
   }, [])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     setUser(null)
     useErpStore.getState().setView('dashboard')
+    setPhase('login')
   }
 
-  if (bootstrapping) {
+  const handleSetupComplete = () => {
+    setPhase('login')
+  }
+
+  const handleLoginSuccess = (u: AuthUser) => {
+    setUser(u)
+    setPhase('authenticated')
+  }
+
+  // --- Render based on phase ---
+
+  if (phase === 'bootstrapping') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -77,8 +117,12 @@ export default function Home() {
     )
   }
 
-  if (!user) {
-    return <LoginView onSuccess={(u) => setUser(u)} />
+  if (phase === 'needs-setup') {
+    return <SetupWizard onComplete={handleSetupComplete} />
+  }
+
+  if (phase === 'login' || !user) {
+    return <LoginView onSuccess={handleLoginSuccess} />
   }
 
   return (
