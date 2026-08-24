@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { ok, err } from '@/lib/api'
+import { setupSchema, validate } from '@/lib/validation'
 
 /**
  * POST /api/setup/initialize
@@ -28,32 +29,13 @@ import { ok, err } from '@/lib/api'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
-    const { organizationName, adminName, adminEmail, adminPassword } = body
 
-    // --- Validate inputs ---
-    if (!organizationName || !adminName || !adminEmail || !adminPassword) {
-      return err(
-        'organizationName, adminName, adminEmail, adminPassword are required',
-        422,
-        undefined,
-        'VALIDATION_ERROR',
-      )
+    // Validate input with Zod schema
+    const validation = validate(setupSchema, body)
+    if (!validation.success) {
+      return err(validation.error, 422, validation.details, 'VALIDATION_ERROR')
     }
-
-    if (typeof adminPassword !== 'string' || adminPassword.length < 8) {
-      return err(
-        'Admin password must be at least 8 characters',
-        422,
-        undefined,
-        'VALIDATION_ERROR',
-      )
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(adminEmail)) {
-      return err('Admin email is invalid', 422, undefined, 'VALIDATION_ERROR')
-    }
+    const { organizationName, adminName, adminEmail, adminPassword } = validation.data
 
     // --- Idempotency check: don't allow re-initialization ---
     const existingUserCount = await db.user.count()
@@ -66,47 +48,52 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // --- Create organization ---
-    const org = await db.organization.create({
-      data: {
-        name: String(organizationName),
-        legalName: String(organizationName),
-        taxId: null,
-        currency: 'USD',
-        baseCurrency: 'USD',
-      },
-    })
+    // --- Create organization + admin user + membership in a transaction ---
+    // Atomic: if any step fails, the whole setup rolls back — no partial state.
+    const { org, adminUser } = await db.$transaction(async (tx) => {
+      const org = await tx.organization.create({
+        data: {
+          name: organizationName,
+          legalName: organizationName,
+          taxId: null,
+          currency: 'USD',
+          baseCurrency: 'USD',
+        },
+      })
 
-    // --- Create admin user with bcrypt-hashed password ---
-    const passwordHash = await bcrypt.hash(String(adminPassword), 10)
-    const adminUser = await db.user.create({
-      data: {
-        email: String(adminEmail).toLowerCase().trim(),
-        name: String(adminName),
-        passwordHash,
-        role: 'Administrator',
-        organizationId: org.id,
-        active: true,
-      },
-    })
-    await db.membership.create({
-      data: {
-        userId: adminUser.id,
-        organizationId: org.id,
-        role: 'Administrator',
-      },
-    })
+      const passwordHash = await bcrypt.hash(adminPassword, 10)
+      const adminUser = await tx.user.create({
+        data: {
+          email: adminEmail,
+          name: adminName,
+          passwordHash,
+          role: 'Administrator',
+          organizationId: org.id,
+          active: true,
+        },
+      })
 
-    // --- Audit log entry ---
-    await db.auditLog.create({
-      data: {
-        organizationId: org.id,
-        userId: adminUser.id,
-        action: 'SETUP_COMPLETE',
-        entityType: 'Organization',
-        entityId: org.id,
-        description: `Initial setup — organization '${org.name}' created with admin user '${adminUser.email}'`,
-      },
+      await tx.membership.create({
+        data: {
+          userId: adminUser.id,
+          organizationId: org.id,
+          role: 'Administrator',
+        },
+      })
+
+      // Audit log entry for setup completion
+      await tx.auditLog.create({
+        data: {
+          organizationId: org.id,
+          userId: adminUser.id,
+          action: 'SETUP_COMPLETE',
+          entityType: 'Organization',
+          entityId: org.id,
+          description: `Initial setup — organization '${org.name}' created with admin user '${adminUser.email}'`,
+        },
+      })
+
+      return { org, adminUser }
     })
 
     return ok({

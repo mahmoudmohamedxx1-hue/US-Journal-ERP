@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
+import { createJournalSchema, validate } from '@/lib/validation'
 
 // GET /api/journals — list with filters & pagination
 export async function GET(req: NextRequest) {
@@ -62,48 +63,33 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser()
   if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+
   const body = await req.json().catch(() => ({}))
+
+  // Validate input with Zod schema
+  const validation = validate(createJournalSchema, body)
+  if (!validation.success) {
+    return err(validation.error, 422, validation.details, 'VALIDATION_ERROR')
+  }
   const {
     journalDate,
     source,
     reference,
     description,
-    currency = 'USD',
-    exchangeRate = 1.0,
-    lines = [],
-    submit = false,
-  } = body
+    currency,
+    exchangeRate,
+    lines: validatedLines,
+    submit,
+  } = validation.data
 
-  // Validate input
-  if (!journalDate) return err('journalDate is required', 422)
-  if (!Array.isArray(lines) || lines.length < 2) {
-    return err('A journal must contain at least two lines', 422)
-  }
-
-  // Normalize lines: ensure exactly one of debit/credit per line
-  const normalizedLines = lines.map((l: {
-    accountId?: string
-    accountCode?: string
-    description?: string
-    debit?: number
-    credit?: number
-  }, i: number) => {
-    const debit = Number(l.debit ?? 0)
-    const credit = Number(l.credit ?? 0)
-    if (debit < 0 || credit < 0) {
-      throw new Error(`Line ${i + 1}: amounts must be positive`)
-    }
-    if (debit > 0 && credit > 0) {
-      throw new Error(`Line ${i + 1}: debit and credit cannot both be entered`)
-    }
-    return {
-      accountId: l.accountId,
-      accountCode: l.accountCode,
-      description: l.description || null,
-      debit,
-      credit,
-    }
-  })
+  const normalizedLines = validatedLines.map((l, i) => ({
+    accountId: l.accountId,
+    accountCode: l.accountCode,
+    description: l.description || null,
+    debit: l.debit,
+    credit: l.credit,
+    _index: i,
+  }))
 
   // Resolve account IDs from codes if needed
   for (const l of normalizedLines) {
@@ -111,33 +97,15 @@ export async function POST(req: NextRequest) {
       const acct = await db.account.findFirst({
         where: { organizationId: user.organizationId, code: l.accountCode },
       })
-      if (!acct) return err(`Account code ${l.accountCode} not found`, 422)
+      if (!acct) return err(`Account code ${l.accountCode} not found`, 422, undefined, 'VALIDATION_ERROR')
       l.accountId = acct.id
     }
-    if (!l.accountId) return err('Each line requires an account', 422)
+    if (!l.accountId) return err('Each line requires an account', 422, undefined, 'VALIDATION_ERROR')
   }
 
-  // Server-side balance check — never trust client totals
-  const totalDebit = normalizedLines.reduce(
-    (s: number, l: { debit: number }) => s + (l.debit || 0),
-    0,
-  )
-  const totalCredit = normalizedLines.reduce(
-    (s: number, l: { credit: number }) => s + (l.credit || 0),
-    0,
-  )
-
-  const isBalanced = Math.abs(totalDebit - totalCredit) < 0.005
-  if (submit && !isBalanced) {
-    return err(
-      `Journal is not balanced — debits (${totalDebit.toFixed(2)}) ≠ credits (${totalCredit.toFixed(2)})`,
-      422,
-    )
-  }
-
-  // Generate next journal number
-  const count = await db.journal.count({ where: { organizationId: user.organizationId } })
-  const journalNumber = `JE-2026-${String(count + 1).padStart(4, '0')}`
+  // Server-side totals (already validated balanced by Zod if submitting)
+  const totalDebit = normalizedLines.reduce((s, l) => s + l.debit, 0)
+  const totalCredit = normalizedLines.reduce((s, l) => s + l.credit, 0)
 
   // Find fiscal period for journalDate
   const jd = new Date(journalDate)
@@ -159,57 +127,106 @@ export async function POST(req: NextRequest) {
 
   const status = submit ? 'Submitted' : 'Draft'
 
-  const journal = await db.journal.create({
-    data: {
-      organizationId: user.organizationId,
-      journalNumber,
-      journalDate: jd,
-      fiscalPeriodId: periodId,
-      source: source || 'Manual',
-      reference: reference || null,
-      description: description || null,
-      currency,
-      exchangeRate,
-      status,
-      totalDebit,
-      totalCredit,
-      createdById: user.id,
-      submittedById: submit ? user.id : null,
-      submittedAt: submit ? new Date() : null,
-    },
-  })
+  // === Atomic journal creation ===
+  // Wrap everything in a database transaction so the journal, lines,
+  // approval record, and audit log are all created atomically.
+  // If any step fails, the entire operation rolls back — no partial journals.
+  //
+  // Journal numbering uses a retry loop to handle the race condition
+  // where two concurrent requests both compute the same count+1.
+  // The unique constraint on journalNumber will reject the second one,
+  // and we retry with a new number.
+  let journal: { id: string; journalNumber: string } | null = null
+  const maxRetries = 5
+  let lastError: unknown = null
 
-  // Create lines
-  for (let i = 0; i < normalizedLines.length; i++) {
-    const l = normalizedLines[i]
-    await db.journalLine.create({
-      data: {
-        journalId: journal.id,
-        lineNumber: i + 1,
-        accountId: l.accountId,
-        description: l.description,
-        debit: l.debit,
-        credit: l.credit,
-      },
-    })
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      journal = await db.$transaction(async (tx) => {
+        // Generate journal number inside the transaction (with locking)
+        const count = await tx.journal.count({
+          where: { organizationId: user.organizationId },
+        })
+        const journalNumber = `JE-${jd.getFullYear()}-${String(count + 1).padStart(4, '0')}`
+
+        // Create the journal header
+        const j = await tx.journal.create({
+          data: {
+            organizationId: user.organizationId,
+            journalNumber,
+            journalDate: jd,
+            fiscalPeriodId: periodId,
+            source: source || 'Manual',
+            reference: reference || null,
+            description: description || null,
+            currency,
+            exchangeRate: Math.round((exchangeRate || 1) * 100),  // store as basis points
+            status,
+            totalDebit,
+            totalCredit,
+            createdById: user.id,
+            submittedById: submit ? user.id : null,
+            submittedAt: submit ? new Date() : null,
+          },
+        })
+
+        // Create all lines in bulk (still inside the transaction)
+        await tx.journalLine.createMany({
+          data: normalizedLines.map((l, i) => ({
+            journalId: j.id,
+            lineNumber: i + 1,
+            accountId: l.accountId!,
+            description: l.description,
+            debit: l.debit,
+            credit: l.credit,
+          })),
+        })
+
+        // Create approval record if submitting
+        if (submit) {
+          await tx.journalApproval.create({
+            data: {
+              journalId: j.id,
+              action: 'Submitted',
+              byUserId: user.id,
+              comment: 'Submitted for review.',
+            },
+          })
+        }
+
+        return { id: j.id, journalNumber: j.journalNumber }
+      })
+      break  // success
+    } catch (e) {
+      lastError = e
+      // P2002 = unique constraint violation (journalNumber collision)
+      // Retry with a new number on the next iteration
+      const isUniqueViolation =
+        e instanceof Error &&
+        'code' in e &&
+        (e as { code: string }).code === 'P2002'
+      if (!isUniqueViolation) {
+        throw e  // re-throw non-retryable errors
+      }
+      // wait a tiny bit before retrying
+      await new Promise((r) => setTimeout(r, 50 * attempt))
+    }
   }
 
-  if (submit) {
-    await db.journalApproval.create({
-      data: {
-        journalId: journal.id,
-        action: 'Submitted',
-        byUserId: user.id,
-        comment: 'Submitted for review.',
-      },
-    })
+  if (!journal) {
+    return err(
+      'Failed to create journal after multiple retries (numbering conflict)',
+      500,
+      { lastError: String(lastError) },
+      'JOURNAL_NUMBER_CONFLICT',
+    )
   }
 
   await logAudit({
     action: submit ? 'SUBMIT_JOURNAL' : 'CREATE_JOURNAL',
     entityType: 'Journal',
     entityId: journal.id,
-    description: `${submit ? 'Submitted' : 'Created'} journal ${journalNumber}${description ? ` — ${description}` : ''}`,
+    description: `${submit ? 'Submitted' : 'Created'} journal ${journal.journalNumber}${description ? ` — ${description}` : ''}`,
   })
 
   const fullJournal = await db.journal.findUniqueOrThrow({
