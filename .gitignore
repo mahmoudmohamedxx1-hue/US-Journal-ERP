@@ -52,3 +52,24 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Electron build artifacts
+/release/
+/electron/dist/
+/build/
+/download/*.zip
+/download/*.AppImage
+/download/*.tar.gz
+/download/*.exe
+/download/*.dmg
+
+# Database files
+/db/*.db
+/db/*.db-journal
+
+# Upload folder (user-provided source files)
+/upload/
+
+# .zscripts (transient runtime state)
+/.zscripts/dev.pid
+/.zscripts/*.log
