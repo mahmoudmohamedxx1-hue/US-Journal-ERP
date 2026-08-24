@@ -1,0 +1,113 @@
+name: Build Desktop Installers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build Linux AppImage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Initialize database
+        run: bun run db:push
+
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Compile Electron main process
+        run: bun run compile:electron
+
+      - name: Build Linux AppImage
+        run: ./node_modules/.bin/electron-builder --linux
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: USJournalERP-Linux-AppImage
+          path: |
+            release/*.AppImage
+            release/*.tar.gz
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Initialize database
+        run: bun run db:push
+
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Compile Electron main process
+        run: bun run compile:electron
+
+      - name: Build Windows NSIS installer
+        run: ./node_modules/.bin/electron-builder --win --config electron-builder.win.yml
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: USJournalERP-Windows-Setup
+          path: |
+            release/*.exe
+          if-no-files-found: error
+
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Initialize database
+        run: bun run db:push
+
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Compile Electron main process
+        run: bun run compile:electron
+
+      - name: Build macOS DMG
+        run: ./node_modules/.bin/electron-builder --mac --config electron-builder.mac.yml
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: USJournalERP-macOS-DMG
+          path: |
+            release/*.dmg
+          if-no-files-found: error
