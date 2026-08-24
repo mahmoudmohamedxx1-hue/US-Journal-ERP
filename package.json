@@ -1,6 +1,10 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
-  "version": "0.2.1",
+  "name": "us-journal-erp",
+  "version": "1.0.0",
+  "description": "Professional journal management and accounting ERP for growing businesses.",
+  "main": "electron/dist/main.js",
+  "author": "US Journal ERP",
+  "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
@@ -10,7 +14,16 @@
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "seed": "bun run scripts/seed.ts",
+    "compile:electron": "tsc -p electron/tsconfig.json",
+    "preelectron:dev": "bun run compile:electron",
+    "electron:dev": "electron electron/dist/main.js",
+    "predist": "bun run build && bun run compile:electron",
+    "dist": "electron-builder",
+    "dist:win": "bun run predist && electron-builder --win --config electron-builder.win.yml",
+    "dist:mac": "bun run predist && electron-builder --mac --config electron-builder.mac.yml",
+    "dist:linux": "bun run predist && electron-builder --linux"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -94,5 +107,51 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.usjournal.erp",
+    "productName": "US Journal ERP",
+    "copyright": "Copyright © 2026 US Journal ERP",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/dist/main.js",
+      "electron/dist/preload.js",
+      "electron/preload.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "app",
+        "filter": ["**/*"]
+      },
+      {
+        "from": ".next/static",
+        "to": "app/.next/static",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "public",
+        "to": "app/public",
+        "filter": ["**/*"]
+      }
+    ],
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "tar.gz", "arch": ["x64"] }
+      ],
+      "category": "Office",
+      "icon": "build/icons",
+      "maintainer": "US Journal ERP",
+      "vendor": "US Journal ERP",
+      "artifactName": "USJournalERP-${version}-${arch}.${ext}"
+    },
+    "appImage": {
+      "artifactName": "USJournalERP-${version}.${ext}"
+    }
   }
 }
