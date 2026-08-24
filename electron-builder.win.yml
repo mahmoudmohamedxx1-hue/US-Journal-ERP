@@ -1,19 +1,14 @@
 # Windows-specific electron-builder config
 # Pass via: electron-builder --win --config electron-builder.win.yml
-#
-# Note: electron-builder v26 schema validation rejects a `win:` block in
-# the config when the `--win` CLI flag is used. So we put win-specific
-# settings (target, icon, artifactName) at the top level — they get merged
-# into the `win:` section automatically when `--win` is specified.
 
-target:
-  - target: nsis
-    arch:
-      - x64
-
-artifactName: USJournalERP-Setup-${version}.${ext}
-publisherName: US Journal ERP
-icon: build/icon.ico
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: USJournalERP-Setup-${version}.${ext}
+  publisherName: US Journal ERP
+  icon: build/icon.ico
 
 nsis:
   oneClick: false

@@ -1,25 +1,20 @@
 # macOS-specific electron-builder config
 # Pass via: electron-builder --mac --config electron-builder.mac.yml
-#
-# Note: electron-builder v26 schema validation rejects a `mac:` block in
-# the config when the `--mac` CLI flag is used. So we put mac-specific
-# settings at the top level — they get merged into the `mac:` section
-# automatically when `--mac` is specified.
 
-target:
-  - target: dmg
-    arch:
-      - x64
-      - arm64
-  - target: zip
-    arch:
-      - x64
-      - arm64
-
-category: public.app-category.finance
-icon: build/icon.icns
-hardenedRuntime: true
-artifactName: USJournalERP-${version}-${arch}.${ext}
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.finance
+  icon: build/icon.icns
+  hardenedRuntime: true
+  artifactName: USJournalERP-${version}-${arch}.${ext}
 
 dmg:
   title: US Journal ERP ${version}
