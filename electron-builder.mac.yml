@@ -1,0 +1,28 @@
+# macOS-specific electron-builder config
+# Extends the base config in package.json's "build" field
+# Usage: electron-builder --mac --config electron-builder.mac.yml
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.finance
+  icon: build/icon.icns
+  hardenedRuntime: true
+  artifactName: USJournalERP-${version}-${arch}.${ext}
+
+dmg:
+  title: US Journal ERP ${version}
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications

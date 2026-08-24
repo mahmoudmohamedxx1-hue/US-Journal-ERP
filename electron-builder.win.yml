@@ -1,0 +1,23 @@
+# Windows-specific electron-builder config
+# Extends the base config in package.json's "build" field
+# Usage: electron-builder --win --config electron-builder.win.yml
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: USJournalERP-Setup-${version}.${ext}
+  publisherName: US Journal ERP
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: US Journal ERP
+  deleteAppDataOnUninstall: false
+  language: '1033'
