@@ -1,9 +1,12 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/accounts — list all accounts (optionally filtered by type / active)
 export async function GET(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const url = new URL(req.url)
   const type = url.searchParams.get('type')
   const activeOnly = url.searchParams.get('active') === '1'
@@ -23,6 +26,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/accounts — create new account
 export async function POST(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const body = await req.json().catch(() => ({}))
   const { code, name, accountType, subType, parentId, normalBalance, taxBehavior, description } = body
 

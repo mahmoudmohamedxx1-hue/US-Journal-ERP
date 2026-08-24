@@ -1,9 +1,12 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from '@/lib/api'
+import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/customers
 export async function GET(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const url = new URL(req.url)
   const includeInvoices = url.searchParams.get('withInvoices') === '1'
   const activeOnly = url.searchParams.get('active') !== '0'

@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useErpStore, type ErpView } from '@/lib/erp-store'
+import { useAuth } from '@/app/page'
 
 interface NavItem {
   id: ErpView
@@ -84,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { view, setView, openJournal } = useErpStore()
   const { theme, setTheme } = useTheme()
+  const { user, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
   const handleNav = (v: ErpView) => {
@@ -165,11 +167,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent/50 px-2 py-1.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
-              MR
+              {user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0 leading-tight">
-              <div className="text-sm font-medium truncate">Marcus Reed</div>
-              <div className="text-[10px] text-sidebar-foreground/60">Controller</div>
+              <div className="text-sm font-medium truncate">{user.name}</div>
+              <div className="text-[10px] text-sidebar-foreground/60">{user.role}</div>
             </div>
             <Settings className="h-4 w-4 text-sidebar-foreground/60" />
           </div>

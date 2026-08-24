@@ -46,6 +46,21 @@ export const ROLES = [
 ] as const
 
 export function formatMoney(amount: number, currency = 'USD'): string {
+  // Amounts are stored as Int (cents) — convert to dollars for display
+  const dollars = (amount || 0) / 100
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(dollars)
+}
+
+/**
+ * Format a value that's already in DOLLARS (not cents).
+ * Use this for form inputs where the user types dollar amounts.
+ */
+export function formatDollars(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -55,17 +70,31 @@ export function formatMoney(amount: number, currency = 'USD'): string {
 }
 
 export function formatNumber(amount: number, decimals = 2): string {
+  // Amounts are stored as Int (cents) — convert to dollars for display
+  const dollars = (amount || 0) / 100
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(amount || 0)
+  }).format(dollars)
 }
 
 export function formatCompact(amount: number): string {
+  // Amounts are stored as Int (cents) — convert to dollars for display
+  const dollars = (amount || 0) / 100
   return new Intl.NumberFormat('en-US', {
     notation: 'compact',
     maximumFractionDigits: 1,
-  }).format(amount || 0)
+  }).format(dollars)
+}
+
+/** Convert a dollar amount (from form input) to cents (Int) for DB storage */
+export function dollarsToCents(dollars: number): number {
+  return Math.round((dollars || 0) * 100)
+}
+
+/** Convert cents (Int, from DB) to dollars for display */
+export function centsToDollars(cents: number): number {
+  return (cents || 0) / 100
 }
 
 export function formatDate(date: Date | string | null | undefined): string {

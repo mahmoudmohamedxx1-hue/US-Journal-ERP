@@ -44,20 +44,33 @@ model User {
   organizationId String
   email         String   @unique
   name          String
-  passwordHash  String   @default("demo")
-  role          String   @default("Viewer")
+  passwordHash  String   // bcrypt-hashed — never store plaintext
+  role          String   @default("Viewer") // Viewer, Accountant, Approver, Controller, Administrator, Auditor
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   memberships  Membership[]
+  sessions     Session[]
   journalsCreated   Journal[]      @relation("JournalCreatedBy")
   journalsSubmitted Journal[]      @relation("JournalSubmittedBy")
   journalsApproved Journal[]      @relation("JournalApprovedBy")
   journalsPosted    Journal[]      @relation("JournalPostedBy")
   approvals         JournalApproval[] @relation("JournalApprovals")
   auditLogs    AuditLog[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
 }
 
 model Membership {
@@ -147,11 +160,11 @@ model Journal {
   reference       String?
   description     String?
   currency        String   @default("USD")
-  exchangeRate    Float    @default(1.0)
+  exchangeRate    Int    @default(100) // stored in basis points (100 = 1.0x)
   status          String   @default("Draft") // Draft, Submitted, Under Review, Approved, Rejected, Posted, Reversed
   reversalOfId    String?
-  totalDebit      Float    @default(0)
-  totalCredit     Float    @default(0)
+  totalDebit      Int    @default(0)
+  totalCredit     Int    @default(0)
   createdById     String
   submittedById   String?
   approvedById    String?
@@ -182,8 +195,8 @@ model JournalLine {
   lineNumber    Int
   accountId     String
   description   String?
-  debit         Float    @default(0)
-  credit        Float    @default(0)
+  debit         Int    @default(0)
+  credit        Int    @default(0)
   taxCodeId     String?
   departmentId  String?
   locationId    String?
@@ -239,7 +252,7 @@ model Vendor {
   paymentTerms   String?  // e.g. "Net 30"
   currency       String   @default("USD")
   active         Boolean  @default(true)
-  balance        Float    @default(0)
+  balance        Int    @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -255,8 +268,8 @@ model Bill {
   billNumber     String
   billDate       DateTime
   dueDate        DateTime
-  amount         Float
-  amountPaid     Float    @default(0)
+  amount         Int
+  amountPaid     Int    @default(0)
   status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
   description    String?
   createdAt      DateTime @default(now())
@@ -277,8 +290,8 @@ model Customer {
   paymentTerms   String?
   currency       String   @default("USD")
   active         Boolean  @default(true)
-  balance        Float    @default(0)
-  creditLimit    Float?
+  balance        Int    @default(0)
+  creditLimit    Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -294,8 +307,8 @@ model Invoice {
   invoiceNumber  String
   invoiceDate    DateTime
   dueDate        DateTime
-  amount         Float
-  amountPaid     Float    @default(0)
+  amount         Int
+  amountPaid     Int    @default(0)
   status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
   description    String?
   createdAt      DateTime @default(now())
@@ -315,7 +328,7 @@ model BankAccount {
   accountNumber  String
   accountType    String   @default("Checking") // Checking, Savings, Cash
   currency       String   @default("USD")
-  balance        Float    @default(0)
+  balance        Int    @default(0)
   active         Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -328,7 +341,7 @@ model BankTransaction {
   id             String   @id @default(cuid())
   bankAccountId  String
   date           DateTime
-  amount         Float
+  amount         Int
   type           String   // Credit (in), Debit (out)
   description    String?
   reference      String?
@@ -349,7 +362,7 @@ model TaxCode {
   organizationId String
   code           String
   name           String
-  rate           Float    // e.g. 0.14 for 14%
+  rate           Int    // e.g. 1400 for 14% (basis points × 100)
   jurisdiction   String?
   taxType        String   @default("VAT") // VAT, Sales Tax, GST
   active         Boolean  @default(true)

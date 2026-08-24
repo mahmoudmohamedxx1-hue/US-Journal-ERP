@@ -1,9 +1,12 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, DEMO_USER_ID, ok, err, logAudit } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/journals — list with filters & pagination
 export async function GET(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const url = new URL(req.url)
   const status = url.searchParams.get('status')
   const source = url.searchParams.get('source')
@@ -57,6 +60,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/journals — create new journal entry
 export async function POST(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const body = await req.json().catch(() => ({}))
   const {
     journalDate,
@@ -168,8 +173,8 @@ export async function POST(req: NextRequest) {
       status,
       totalDebit,
       totalCredit,
-      createdById: DEMO_USER_ID,
-      submittedById: submit ? DEMO_USER_ID : null,
+      createdById: user.id,
+      submittedById: submit ? user.id : null,
       submittedAt: submit ? new Date() : null,
     },
   })
@@ -194,7 +199,7 @@ export async function POST(req: NextRequest) {
       data: {
         journalId: journal.id,
         action: 'Submitted',
-        byUserId: DEMO_USER_ID,
+        byUserId: user.id,
         comment: 'Submitted for review.',
       },
     })

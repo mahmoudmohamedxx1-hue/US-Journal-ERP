@@ -1,12 +1,15 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, DEMO_USER_ID, ok, err, logAudit } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/journals/[id] — fetch full journal detail with lines, approvals, audit history
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const journal = await db.journal.findFirst({
     where: { id, organizationId: DEMO_ORG_ID },
@@ -35,6 +38,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const body = await req.json().catch(() => ({}))
 
@@ -148,6 +153,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const journal = await db.journal.findFirst({
     where: { id, organizationId: DEMO_ORG_ID },

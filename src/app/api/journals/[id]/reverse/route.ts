@@ -1,12 +1,15 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, DEMO_USER_ID, ok, err, logAudit } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // POST /api/journals/[id]/reverse — create a reversal of a Posted journal
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
 
   const original = await db.journal.findFirst({
@@ -52,8 +55,8 @@ export async function POST(
         status: 'Posted', // posted immediately
         totalDebit,
         totalCredit,
-        createdById: DEMO_USER_ID,
-        postedById: DEMO_USER_ID,
+        createdById: user.id,
+        postedById: user.id,
         postedAt: new Date(),
         reversalOfId: original.id,
       },
@@ -80,7 +83,7 @@ export async function POST(
     })
 
     await tx.journalApproval.create({
-      data: { journalId: rev.id, action: 'Posted', byUserId: DEMO_USER_ID },
+      data: { journalId: rev.id, action: 'Posted', byUserId: user.id },
     })
 
     return rev

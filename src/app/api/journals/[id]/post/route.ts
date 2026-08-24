@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, DEMO_USER_ID, ok, err, logAudit } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // POST /api/journals/[id]/post — post an Approved journal to the GL
 // Uses a database transaction for atomicity
@@ -8,6 +9,8 @@ export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
 
   const journal = await db.journal.findFirst({
@@ -43,7 +46,7 @@ export async function POST(
       where: { id },
       data: {
         status: 'Posted',
-        postedById: DEMO_USER_ID,
+        postedById: user.id,
         postedAt: new Date(),
         postingDate: new Date(),
         totalDebit,
@@ -51,7 +54,7 @@ export async function POST(
       },
     })
     await tx.journalApproval.create({
-      data: { journalId: id, action: 'Posted', byUserId: DEMO_USER_ID },
+      data: { journalId: id, action: 'Posted', byUserId: user.id },
     })
   })
 

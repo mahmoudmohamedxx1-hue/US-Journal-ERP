@@ -1,12 +1,15 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, DEMO_USER_ID, ok, err, logAudit } from '@/lib/api'
+import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // POST /api/journals/[id]/reject — reject a Submitted journal, returns to Draft
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const body = await req.json().catch(() => ({}))
   const reason = body.reason || 'No reason provided'
@@ -27,7 +30,7 @@ export async function POST(
     data: {
       journalId: id,
       action: 'Rejected',
-      byUserId: DEMO_USER_ID,
+      byUserId: user.id,
       comment: reason,
     },
   })

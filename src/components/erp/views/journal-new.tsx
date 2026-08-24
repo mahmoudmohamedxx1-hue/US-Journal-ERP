@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useErpStore } from '@/lib/erp-store'
-import { formatMoney } from '@/lib/format'
+import { formatDollars } from '@/lib/format'
 import { CurrencyInput } from '@/components/erp/currency-input'
 import { AccountCombobox, type AccountOption } from '@/components/erp/account-combobox'
 import { BalanceIndicator } from '@/components/erp/balance-indicator'
@@ -130,8 +130,8 @@ export function JournalNewView() {
           lines: lines.map((l, i) => ({
             accountId: l.accountId,
             description: l.description || undefined,
-            debit: l.debit || 0,
-            credit: l.credit || 0,
+            debit: Math.round((l.debit || 0) * 100),  // convert dollars to cents
+            credit: Math.round((l.credit || 0) * 100),
             lineNumber: i + 1,
           })),
           submit,
@@ -308,8 +308,8 @@ export function JournalNewView() {
                 <div></div>
                 <div className="text-xs uppercase text-muted-foreground">Totals</div>
                 <div></div>
-                <div className="text-right font-mono tabular-nums">{formatMoney(totalDebit)}</div>
-                <div className="text-right font-mono tabular-nums">{formatMoney(totalCredit)}</div>
+                <div className="text-right font-mono tabular-nums">{formatDollars(totalDebit)}</div>
+                <div className="text-right font-mono tabular-nums">{formatDollars(totalCredit)}</div>
                 <div></div>
               </div>
             </CardContent>

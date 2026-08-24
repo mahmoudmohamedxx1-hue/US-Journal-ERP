@@ -1,9 +1,12 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from '@/lib/api'
+import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/reports/cash-flow — indirect method (Net Income → operating adjustments → investing → financing)
 export async function GET(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const url = new URL(req.url)
   const from = url.searchParams.get('from')
     ? new Date(url.searchParams.get('from')!)

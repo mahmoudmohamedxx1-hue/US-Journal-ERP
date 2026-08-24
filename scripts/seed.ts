@@ -2,9 +2,17 @@
  * US Journal ERP — Seed script
  * Generates realistic demo data for an accounting ERP.
  *
+ * All monetary values are stored as Int (cents) — decimal-safe, no float drift.
+ *
  * Run: `bun run scripts/seed.ts`
  */
 import { db } from '../src/lib/db'
+import bcrypt from 'bcryptjs'
+
+// Convert dollars to cents (Int) — the database stores all money as Int
+function $(dollars: number): number {
+  return Math.round(dollars * 100)
+}
 
 async function main() {
   console.log('🌱 Seeding US Journal ERP...')
@@ -24,21 +32,29 @@ async function main() {
   })
   console.log(`  ✓ Organization: ${org.name}`)
 
-  // 2. Users with various roles
+  // 2. Users with various roles — real bcrypt-hashed passwords
   const users = []
   const userDefs = [
-    { id: 'u-admin',   email: 'admin@usjournal.test',    name: 'Sarah Chen',     role: 'Administrator' },
-    { id: 'u-ctrl',    email: 'controller@usjournal.test', name: 'Marcus Reed',   role: 'Controller' },
-    { id: 'u-appr',    email: 'approver@usjournal.test',  name: 'Diana Park',     role: 'Approver' },
-    { id: 'u-acct',    email: 'accountant@usjournal.test', name: 'Omar Haddad',   role: 'Accountant' },
-    { id: 'u-aud',     email: 'auditor@usjournal.test',   name: 'Linda Vasquez',  role: 'Auditor' },
-    { id: 'u-view',    email: 'viewer@usjournal.test',    name: 'Tom Bridges',    role: 'Viewer' },
+    { id: 'u-admin',   email: 'admin@usjournal.test',    name: 'Sarah Chen',     role: 'Administrator', password: 'Admin@2026' },
+    { id: 'u-ctrl',    email: 'controller@usjournal.test', name: 'Marcus Reed',    role: 'Controller',    password: 'Control@2026' },
+    { id: 'u-appr',    email: 'approver@usjournal.test',  name: 'Diana Park',     role: 'Approver',      password: 'Approve@2026' },
+    { id: 'u-acct',    email: 'accountant@usjournal.test', name: 'Omar Haddad',   role: 'Accountant',    password: 'Accounts@2026' },
+    { id: 'u-aud',     email: 'auditor@usjournal.test',   name: 'Linda Vasquez',  role: 'Auditor',       password: 'Audit@2026' },
+    { id: 'u-view',    email: 'viewer@usjournal.test',     name: 'Tom Bridges',    role: 'Viewer',         password: 'View@2026' },
   ]
   for (const u of userDefs) {
+    const passwordHash = await bcrypt.hash(u.password, 10)
     const user = await db.user.upsert({
       where: { email: u.email },
-      update: { role: u.role, organizationId: org.id },
-      create: { ...u, organizationId: org.id, passwordHash: 'demo' },
+      update: { role: u.role, organizationId: org.id, passwordHash },
+      create: {
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        role: u.role,
+        organizationId: org.id,
+        passwordHash,
+      },
     })
     users.push(user)
     await db.membership.upsert({
@@ -47,7 +63,7 @@ async function main() {
       create: { userId: user.id, organizationId: org.id, role: u.role },
     })
   }
-  console.log(`  ✓ ${users.length} users seeded`)
+  console.log(`  ✓ ${users.length} users seeded (bcrypt-hashed passwords)`)
 
   // 3. Chart of Accounts — production-style structure
   const accounts = [
@@ -192,13 +208,13 @@ async function main() {
 
   // 5. Vendors
   const vendors = [
-    { num: 'V-001', name: 'Acme Office Supplies', contact: 'James Park', email: 'sales@acmeoffice.test', terms: 'Net 30', balance: 4250.00 },
-    { num: 'V-002', name: 'TechRental Co.',       contact: 'Anna Brooks', email: 'billing@techrental.test', terms: 'Net 15', balance: 12750.00 },
-    { num: 'V-003', name: 'Metro Power & Light',  contact: '—',           email: 'support@metropower.test', terms: 'Net 30', balance: 1820.45 },
-    { num: 'V-004', name: 'Pinnacle Insurance',   contact: 'Robert Vance', email: 'claims@pinnacle.test',  terms: 'Net 60', balance: 8900.00 },
-    { num: 'V-005', name: 'Atlas Logistics',      contact: 'Lila Hoffman', email: 'ap@atlaslog.test',      terms: 'Net 30', balance: 5600.00 },
-    { num: 'V-006', name: 'Westbrook Consulting', contact: 'Evan Wright',  email: 'evan@westbrook.test',    terms: 'Net 45', balance: 18750.00 },
-    { num: 'V-007', name: 'CityBank Mortgage',    contact: '—',            email: 'loans@citybank.test',    terms: 'Net 30', balance: 24500.00 },
+    { num: 'V-001', name: 'Acme Office Supplies', contact: 'James Park', email: 'sales@acmeoffice.test', terms: 'Net 30', balance: $(4250.00) },
+    { num: 'V-002', name: 'TechRental Co.',       contact: 'Anna Brooks', email: 'billing@techrental.test', terms: 'Net 15', balance: $(12750.00) },
+    { num: 'V-003', name: 'Metro Power & Light',  contact: '—',           email: 'support@metropower.test', terms: 'Net 30', balance: $(1820.45) },
+    { num: 'V-004', name: 'Pinnacle Insurance',   contact: 'Robert Vance', email: 'claims@pinnacle.test',  terms: 'Net 60', balance: $(8900.00) },
+    { num: 'V-005', name: 'Atlas Logistics',      contact: 'Lila Hoffman', email: 'ap@atlaslog.test',      terms: 'Net 30', balance: $(5600.00) },
+    { num: 'V-006', name: 'Westbrook Consulting', contact: 'Evan Wright',  email: 'evan@westbrook.test',    terms: 'Net 45', balance: $(18750.00) },
+    { num: 'V-007', name: 'CityBank Mortgage',    contact: '—',            email: 'loans@citybank.test',    terms: 'Net 30', balance: $(24500.00) },
   ]
   for (const v of vendors) {
     await db.vendor.create({
@@ -218,12 +234,12 @@ async function main() {
 
   // 6. Customers
   const customers = [
-    { num: 'C-001', name: 'Northwind Traders',     contact: 'Eric Lin',    email: 'ap@northwind.test',    terms: 'Net 30', balance: 28500.00, creditLimit: 50000 },
-    { num: 'C-002', name: 'Contoso Pharmaceuticals', contact: 'Yuki Tan', email: 'finance@contoso.test',  terms: 'Net 45', balance: 47800.00, creditLimit: 75000 },
-    { num: 'C-003', name: 'Fabrikam Industries',   contact: 'Maria Soto',  email: 'ar@fabrikam.test',      terms: 'Net 30', balance: 12300.00, creditLimit: 30000 },
-    { num: 'C-004', name: 'Tailspin Toys',         contact: 'Ben Cho',     email: 'billing@tailspin.test', terms: 'Net 15', balance: 5400.00, creditLimit: 20000 },
-    { num: 'C-005', name: 'Wide World Importers',  contact: 'Sara Diaz',   email: 'ap@wideworld.test',    terms: 'Net 60', balance: 61200.00, creditLimit: 100000 },
-    { num: 'C-006', name: 'Proseware Ltd.',        contact: 'Jin Kim',     email: 'finance@proseware.test',terms: 'Net 30', balance: 8900.00, creditLimit: 25000 },
+    { num: 'C-001', name: 'Northwind Traders',     contact: 'Eric Lin',    email: 'ap@northwind.test',    terms: 'Net 30', balance: $(28500.00), creditLimit: $(50000) },
+    { num: 'C-002', name: 'Contoso Pharmaceuticals', contact: 'Yuki Tan', email: 'finance@contoso.test',  terms: 'Net 45', balance: $(47800.00), creditLimit: $(75000) },
+    { num: 'C-003', name: 'Fabrikam Industries',   contact: 'Maria Soto',  email: 'ar@fabrikam.test',      terms: 'Net 30', balance: $(12300.00), creditLimit: $(30000) },
+    { num: 'C-004', name: 'Tailspin Toys',         contact: 'Ben Cho',     email: 'billing@tailspin.test', terms: 'Net 15', balance: $(5400.00), creditLimit: $(20000) },
+    { num: 'C-005', name: 'Wide World Importers',  contact: 'Sara Diaz',   email: 'ap@wideworld.test',    terms: 'Net 60', balance: $(61200.00), creditLimit: $(100000) },
+    { num: 'C-006', name: 'Proseware Ltd.',        contact: 'Jin Kim',     email: 'finance@proseware.test',terms: 'Net 30', balance: $(8900.00), creditLimit: $(25000) },
   ]
   for (const c of customers) {
     await db.customer.create({
@@ -244,10 +260,10 @@ async function main() {
 
   // 7. Bank accounts
   const bankAccounts = [
-    { name: 'Operating Checking', bankName: 'First National Bank', number: '****4521', type: 'Checking', balance: 285430.22 },
-    { name: 'Payroll Checking',   bankName: 'First National Bank', number: '****7832', type: 'Checking', balance: 48200.00 },
-    { name: 'Business Savings',   bankName: 'First National Bank', number: '****9102', type: 'Savings',  balance: 450000.00 },
-    { name: 'Petty Cash',          bankName: '—',                   number: '—',        type: 'Cash',     balance: 850.00 },
+    { name: 'Operating Checking', bankName: 'First National Bank', number: '****4521', type: 'Checking', balance: $(285430.22) },
+    { name: 'Payroll Checking',   bankName: 'First National Bank', number: '****7832', type: 'Checking', balance: $(48200.00) },
+    { name: 'Business Savings',   bankName: 'First National Bank', number: '****9102', type: 'Savings',  balance: $(450000.00) },
+    { name: 'Petty Cash',          bankName: '—',                   number: '—',        type: 'Cash',     balance: $(850.00) },
   ]
   for (const b of bankAccounts) {
     await db.bankAccount.create({
@@ -266,10 +282,10 @@ async function main() {
 
   // 8. Tax codes
   const taxCodes = [
-    { code: 'STD',  name: 'Standard VAT',   rate: 0.08,  jurisdiction: 'State', taxType: 'Sales Tax' },
-    { code: 'ZERO', name: 'Zero-rated',     rate: 0.00,  jurisdiction: 'State', taxType: 'Sales Tax' },
-    { code: 'FED',  name: 'Federal Sales',  rate: 0.05,  jurisdiction: 'Federal', taxType: 'Sales Tax' },
-    { code: 'EXEMPT', name: 'Exempt',       rate: 0.00,  jurisdiction: 'Federal', taxType: 'Sales Tax' },
+    { code: 'STD',  name: 'Standard VAT',   rate: 800,  jurisdiction: 'State', taxType: 'Sales Tax' },     // 8% = 800 bps
+    { code: 'ZERO', name: 'Zero-rated',     rate: 0,    jurisdiction: 'State', taxType: 'Sales Tax' },
+    { code: 'FED',  name: 'Federal Sales',  rate: 500,  jurisdiction: 'Federal', taxType: 'Sales Tax' },   // 5% = 500 bps
+    { code: 'EXEMPT', name: 'Exempt',       rate: 0,    jurisdiction: 'Federal', taxType: 'Sales Tax' },
   ]
   for (const t of taxCodes) {
     await db.taxCode.create({
@@ -314,8 +330,8 @@ async function main() {
       description: 'Record initial capital contribution from shareholders',
       status: 'Posted',
       lines: [
-        { accountCode: '1111', description: 'Cash from shareholders', debit: 500000 },
-        { accountCode: '3100', description: 'Common stock issued',    credit: 500000 },
+        { accountCode: '1111', description: 'Cash from shareholders', debit: $(500000) },
+        { accountCode: '3100', description: 'Common stock issued',    credit: $(500000) },
       ],
     },
     {
@@ -323,8 +339,8 @@ async function main() {
       description: 'Bank loan disbursement — 5-year term',
       status: 'Posted',
       lines: [
-        { accountCode: '1111', description: 'Loan proceeds',            debit: 250000 },
-        { accountCode: '2210', description: '5-year bank loan payable',  credit: 250000 },
+        { accountCode: '1111', description: 'Loan proceeds',            debit: $(250000) },
+        { accountCode: '2210', description: '5-year bank loan payable',  credit: $(250000) },
       ],
     },
     {
@@ -332,9 +348,9 @@ async function main() {
       description: 'Product sale to Northwind Traders — invoice INV-2026-001',
       status: 'Posted',
       lines: [
-        { accountCode: '1120', description: 'AR — Northwind Traders', debit: 28500 },
-        { accountCode: '4100', description: 'Product sales revenue',  credit: 26388.89 },
-        { accountCode: '2130', description: 'Sales tax payable (8%)', credit: 2111.11 },
+        { accountCode: '1120', description: 'AR — Northwind Traders', debit: $(28500) },
+        { accountCode: '4100', description: 'Product sales revenue',  credit: $(26388.89) },
+        { accountCode: '2130', description: 'Sales tax payable (8%)', credit: $(2111.11) },
       ],
     },
     {
@@ -342,8 +358,8 @@ async function main() {
       description: 'Office supplies purchase — Acme Office Supplies',
       status: 'Posted',
       lines: [
-        { accountCode: '6400', description: 'Office supplies',         debit: 4250 },
-        { accountCode: '2110', description: 'AP — Acme Office',         credit: 4250 },
+        { accountCode: '6400', description: 'Office supplies',         debit: $(4250) },
+        { accountCode: '2110', description: 'AP — Acme Office',         credit: $(4250) },
       ],
     },
     {
@@ -351,10 +367,10 @@ async function main() {
       description: 'Payroll run — January bi-monthly',
       status: 'Posted',
       lines: [
-        { accountCode: '6100', description: 'Salaries & wages',  debit: 84500 },
-        { accountCode: '6110', description: 'Payroll taxes',       debit: 12800 },
-        { accountCode: '2150', description: 'Wages payable',      credit: 72300 },
-        { accountCode: '2140', description: 'Payroll tax payable', credit: 25000 },
+        { accountCode: '6100', description: 'Salaries & wages',  debit: $(84500) },
+        { accountCode: '6110', description: 'Payroll taxes',       debit: $(12800) },
+        { accountCode: '2150', description: 'Wages payable',      credit: $(72300) },
+        { accountCode: '2140', description: 'Payroll tax payable', credit: $(25000) },
       ],
     },
     {
@@ -362,8 +378,8 @@ async function main() {
       description: 'Office rent payment — February 2026',
       status: 'Posted',
       lines: [
-        { accountCode: '6200', description: 'Rent expense',      debit: 12000 },
-        { accountCode: '1111', description: 'Check #10452',        credit: 12000 },
+        { accountCode: '6200', description: 'Rent expense',      debit: $(12000) },
+        { accountCode: '1111', description: 'Check #10452',        credit: $(12000) },
       ],
     },
     {
@@ -371,9 +387,9 @@ async function main() {
       description: 'Consulting revenue — Contoso Pharmaceuticals',
       status: 'Posted',
       lines: [
-        { accountCode: '1120', description: 'AR — Contoso',          debit: 47800 },
-        { accountCode: '4110', description: 'Consulting revenue',   credit: 44259.26 },
-        { accountCode: '2130', description: 'Sales tax payable',     credit: 3540.74 },
+        { accountCode: '1120', description: 'AR — Contoso',          debit: $(47800) },
+        { accountCode: '4110', description: 'Consulting revenue',   credit: $(44259.26) },
+        { accountCode: '2130', description: 'Sales tax payable',     credit: $(3540.74) },
       ],
     },
     {
@@ -381,10 +397,10 @@ async function main() {
       description: 'Quarterly depreciation — Q1 2026',
       status: 'Posted',
       lines: [
-        { accountCode: '6800', description: 'Depreciation expense',         debit: 8500 },
-        { accountCode: '1221', description: 'Accum dep — Buildings',         credit: 4200 },
-        { accountCode: '1231', description: 'Accum dep — Office Equipment',  credit: 2100 },
-        { accountCode: '1241', description: 'Accum dep — Computer Hardware', credit: 2200 },
+        { accountCode: '6800', description: 'Depreciation expense',         debit: $(8500) },
+        { accountCode: '1221', description: 'Accum dep — Buildings',         credit: $(4200) },
+        { accountCode: '1231', description: 'Accum dep — Office Equipment',  credit: $(2100) },
+        { accountCode: '1241', description: 'Accum dep — Computer Hardware', credit: $(2200) },
       ],
     },
     {
@@ -392,8 +408,8 @@ async function main() {
       description: 'Bank interest income — Q1 2026',
       status: 'Posted',
       lines: [
-        { accountCode: '1113', description: 'Savings interest',  debit: 4125.50 },
-        { accountCode: '4210', description: 'Interest income',    credit: 4125.50 },
+        { accountCode: '1113', description: 'Savings interest',  debit: $(4125.50) },
+        { accountCode: '4210', description: 'Interest income',    credit: $(4125.50) },
       ],
     },
     {
@@ -401,8 +417,8 @@ async function main() {
       description: 'Annual insurance premium — Pinnacle Insurance',
       status: 'Posted',
       lines: [
-        { accountCode: '6700', description: 'Insurance premium — annual', debit: 8900 },
-        { accountCode: '2110', description: 'AP — Pinnacle',               credit: 8900 },
+        { accountCode: '6700', description: 'Insurance premium — annual', debit: $(8900) },
+        { accountCode: '2110', description: 'AP — Pinnacle',               credit: $(8900) },
       ],
     },
     {
@@ -410,9 +426,9 @@ async function main() {
       description: 'Subscription revenue — Wide World Importers annual plan',
       status: 'Posted',
       lines: [
-        { accountCode: '1111', description: 'Cash received',              debit: 61200 },
-        { accountCode: '4120', description: 'Subscription revenue',       credit: 56666.67 },
-        { accountCode: '2130', description: 'Sales tax payable (8%)',     credit: 4533.33 },
+        { accountCode: '1111', description: 'Cash received',              debit: $(61200) },
+        { accountCode: '4120', description: 'Subscription revenue',       credit: $(56666.67) },
+        { accountCode: '2130', description: 'Sales tax payable (8%)',     credit: $(4533.33) },
       ],
     },
     {
@@ -420,8 +436,8 @@ async function main() {
       description: 'Consulting fees — Westbrook Consulting — Q2 review',
       status: 'Posted',
       lines: [
-        { accountCode: '6600', description: 'Professional fees',          debit: 18750 },
-        { accountCode: '2110', description: 'AP — Westbrook',              credit: 18750 },
+        { accountCode: '6600', description: 'Professional fees',          debit: $(18750) },
+        { accountCode: '2110', description: 'AP — Westbrook',              credit: $(18750) },
       ],
     },
 
@@ -431,8 +447,8 @@ async function main() {
       description: 'Office rent payment — August 2026',
       status: 'Posted',
       lines: [
-        { accountCode: '6200', description: 'Rent expense',  debit: 12000 },
-        { accountCode: '1111', description: 'Check #10782',    credit: 12000 },
+        { accountCode: '6200', description: 'Rent expense',  debit: $(12000) },
+        { accountCode: '1111', description: 'Check #10782',    credit: $(12000) },
       ],
     },
     {
@@ -440,9 +456,9 @@ async function main() {
       description: 'Product sale — Tailspin Toys',
       status: 'Approved',
       lines: [
-        { accountCode: '1120', description: 'AR — Tailspin Toys',  debit: 5400 },
-        { accountCode: '4100', description: 'Product sales',         credit: 5000 },
-        { accountCode: '2130', description: 'Sales tax (8%)',        credit: 400 },
+        { accountCode: '1120', description: 'AR — Tailspin Toys',  debit: $(5400) },
+        { accountCode: '4100', description: 'Product sales',         credit: $(5000) },
+        { accountCode: '2130', description: 'Sales tax (8%)',        credit: $(400) },
       ],
     },
     {
@@ -450,8 +466,8 @@ async function main() {
       description: 'Electricity bill — Metro Power & Light — July',
       status: 'Submitted',
       lines: [
-        { accountCode: '6300', description: 'Utilities — electricity', debit: 1820.45 },
-        { accountCode: '2110', description: 'AP — Metro Power',           credit: 1820.45 },
+        { accountCode: '6300', description: 'Utilities — electricity', debit: $(1820.45) },
+        { accountCode: '2110', description: 'AP — Metro Power',           credit: $(1820.45) },
       ],
     },
     {
@@ -459,8 +475,8 @@ async function main() {
       description: 'Consulting revenue — Proseware Ltd.',
       status: 'Under Review',
       lines: [
-        { accountCode: '1120', description: 'AR — Proseware',     debit: 8900 },
-        { accountCode: '4110', description: 'Consulting revenue',  credit: 8900 },
+        { accountCode: '1120', description: 'AR — Proseware',     debit: $(8900) },
+        { accountCode: '4110', description: 'Consulting revenue',  credit: $(8900) },
       ],
     },
     {
@@ -468,8 +484,8 @@ async function main() {
       description: 'Sales team travel — client visit to Wide World Importers',
       status: 'Draft',
       lines: [
-        { accountCode: '6900', description: 'Travel — flights & lodging', debit: 2340 },
-        { accountCode: '1115', description: 'Petty cash reimbursement',    credit: 2340 },
+        { accountCode: '6900', description: 'Travel — flights & lodging', debit: $(2340) },
+        { accountCode: '1115', description: 'Petty cash reimbursement',    credit: $(2340) },
       ],
     },
     {
@@ -477,8 +493,8 @@ async function main() {
       description: 'Equipment rental — TechRental Co. — August',
       status: 'Draft',
       lines: [
-        { accountCode: '6400', description: 'Equipment rental',      debit: 12750 },
-        { accountCode: '2110', description: 'AP — TechRental',         credit: 12750 },
+        { accountCode: '6400', description: 'Equipment rental',      debit: $(12750) },
+        { accountCode: '2110', description: 'AP — TechRental',         credit: $(12750) },
       ],
     },
     {
@@ -486,8 +502,8 @@ async function main() {
       description: 'Foreign exchange loss — EUR/USD revaluation',
       status: 'Rejected',
       lines: [
-        { accountCode: '7200', description: 'FX loss',          debit: 540 },
-        { accountCode: '1111', description: 'Operating checking', credit: 540 },
+        { accountCode: '7200', description: 'FX loss',          debit: $(540) },
+        { accountCode: '1111', description: 'Operating checking', credit: $(540) },
       ],
     },
     {
@@ -495,8 +511,8 @@ async function main() {
       description: 'Subscription revenue — Contoso Pharmaceuticals — monthly',
       status: 'Draft',
       lines: [
-        { accountCode: '1111', description: 'Cash received',          debit: 7800 },
-        { accountCode: '4120', description: 'Subscription revenue',    credit: 7800 },
+        { accountCode: '1111', description: 'Cash received',          debit: $(7800) },
+        { accountCode: '4120', description: 'Subscription revenue',    credit: $(7800) },
       ],
     },
   ]
@@ -622,11 +638,11 @@ async function main() {
 
   // 11. Open invoices / bills
   const invoicesToCreate = [
-    { num: 'INV-2026-001', custCode: 'C-001', date: '2026-01-15', due: '2026-02-14', amount: 28500, paid: 28500 },
-    { num: 'INV-2026-008', custCode: 'C-002', date: '2026-02-15', due: '2026-03-31', amount: 47800, paid: 0 },
-    { num: 'INV-2026-019', custCode: 'C-005', date: '2026-06-20', due: '2026-08-19', amount: 61200, paid: 0 },
-    { num: 'INV-2026-031', custCode: 'C-004', date: '2026-08-05', due: '2026-08-20', amount: 5400, paid: 0 },
-    { num: 'INV-2026-035', custCode: 'C-006', date: '2026-08-22', due: '2026-09-21', amount: 8900, paid: 0 },
+    { num: 'INV-2026-001', custCode: 'C-001', date: '2026-01-15', due: '2026-02-14', amount: $(28500), paid: $(28500) },
+    { num: 'INV-2026-008', custCode: 'C-002', date: '2026-02-15', due: '2026-03-31', amount: $(47800), paid: $(0) },
+    { num: 'INV-2026-019', custCode: 'C-005', date: '2026-06-20', due: '2026-08-19', amount: $(61200), paid: $(0) },
+    { num: 'INV-2026-031', custCode: 'C-004', date: '2026-08-05', due: '2026-08-20', amount: $(5400), paid: $(0) },
+    { num: 'INV-2026-035', custCode: 'C-006', date: '2026-08-22', due: '2026-09-21', amount: $(8900), paid: $(0) },
   ]
   for (const inv of invoicesToCreate) {
     const cust = await db.customer.findFirst({ where: { organizationId: org.id, customerNumber: inv.custCode } })
@@ -652,12 +668,12 @@ async function main() {
   console.log(`  ✓ ${invoicesToCreate.length} invoices seeded`)
 
   const billsToCreate = [
-    { num: 'BILL-V001', vCode: 'V-001', date: '2026-01-20', due: '2026-02-19', amount: 4250, paid: 4250 },
-    { num: 'BILL-V004', vCode: 'V-004', date: '2026-05-12', due: '2026-07-11', amount: 8900, paid: 0 },
-    { num: 'BILL-V003', vCode: 'V-003', date: '2026-08-10', due: '2026-09-09', amount: 1820.45, paid: 0 },
-    { num: 'BILL-V002', vCode: 'V-002', date: '2026-08-18', due: '2026-09-02', amount: 12750, paid: 0 },
-    { num: 'BILL-V006', vCode: 'V-006', date: '2026-07-15', due: '2026-08-29', amount: 18750, paid: 0 },
-    { num: 'BILL-V007', vCode: 'V-007', date: '2026-08-01', due: '2026-08-31', amount: 24500, paid: 0 },
+    { num: 'BILL-V001', vCode: 'V-001', date: '2026-01-20', due: '2026-02-19', amount: $(4250), paid: $(4250) },
+    { num: 'BILL-V004', vCode: 'V-004', date: '2026-05-12', due: '2026-07-11', amount: $(8900), paid: $(0) },
+    { num: 'BILL-V003', vCode: 'V-003', date: '2026-08-10', due: '2026-09-09', amount: $(1820.45), paid: $(0) },
+    { num: 'BILL-V002', vCode: 'V-002', date: '2026-08-18', due: '2026-09-02', amount: $(12750), paid: $(0) },
+    { num: 'BILL-V006', vCode: 'V-006', date: '2026-07-15', due: '2026-08-29', amount: $(18750), paid: $(0) },
+    { num: 'BILL-V007', vCode: 'V-007', date: '2026-08-01', due: '2026-08-31', amount: $(24500), paid: $(0) },
   ]
   for (const b of billsToCreate) {
     const vendor = await db.vendor.findFirst({ where: { organizationId: org.id, vendorNumber: b.vCode } })

@@ -27,6 +27,7 @@ import {
   Legend,
 } from 'recharts'
 import { useErpStore } from '@/lib/erp-store'
+import { useAuth } from '@/app/page'
 import { formatMoney, formatCompact, formatDate, STATUS_META, type JournalStatus } from '@/lib/format'
 import { KpiCard } from '@/components/erp/kpi-card'
 import { StatusBadge } from '@/components/erp/status-badge'
@@ -85,6 +86,7 @@ interface DashboardData {
 
 export function DashboardView() {
   const { openJournal, setView } = useErpStore()
+  const { user } = useAuth()
   const [data, setData] = React.useState<DashboardData | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -136,7 +138,7 @@ export function DashboardView() {
           <span>·</span>
           <span>FY 2026 · As of {formatDate(new Date())}</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back, Marcus</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {user.name.split(' ')[0]}</h1>
         <p className="text-sm text-muted-foreground">
           Here&apos;s a snapshot of {data.organization.name}&apos;s financial position and recent activity.
         </p>

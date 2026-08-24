@@ -1,23 +1,44 @@
 /**
- * Shared API helpers — single-tenant demo org for the US Journal ERP.
- * In a production multi-tenant deployment these would derive the orgId
- * from the authenticated session.
+ * Shared API helpers — session-aware auth + structured JSON error responses.
  */
 import { db } from './db'
+import { getCurrentUser, type AuthUser, type Role } from './auth'
 
+// Fallback org ID (used only when no session — e.g. login page SSR).
 export const DEMO_ORG_ID = 'org-us-journal'
 
-// Hard-coded "current user" for demo purposes (Controller role so they can post).
-// In production, derive from session via Better Auth.
-export const DEMO_USER_ID = 'u-ctrl'
-
 export async function getCurrentOrg() {
-  return db.organization.findUniqueOrThrow({ where: { id: DEMO_ORG_ID } })
+  const user = await getCurrentUser()
+  const orgId = user?.organizationId ?? DEMO_ORG_ID
+  return db.organization.findUniqueOrThrow({ where: { id: orgId } })
 }
 
-export async function getCurrentUser() {
-  return db.user.findUniqueOrThrow({ where: { id: DEMO_USER_ID } })
+/**
+ * Returns the currently-authenticated user, or null.
+ */
+export async function getCurrentAuthUser(): Promise<AuthUser | null> {
+  return getCurrentUser()
 }
+
+/**
+ * Returns the current user's organization ID.
+ * Falls back to the demo org if no session (SSR on login page).
+ */
+export async function getCurrentOrgId(): Promise<string> {
+  const user = await getCurrentUser()
+  return user?.organizationId ?? DEMO_ORG_ID
+}
+
+/**
+ * Returns the current user's ID, or null if not authenticated.
+ */
+export async function getCurrentUserId(): Promise<string | null> {
+  const user = await getCurrentUser()
+  return user?.id ?? null
+}
+
+// Backward-compat export (deprecated — use getCurrentUserId() instead).
+export const DEMO_USER_ID = 'u-ctrl'
 
 export function formatMoney(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
@@ -50,14 +71,47 @@ export function formatDateTime(date: Date | string | null | undefined): string {
   })
 }
 
+/** Success response helper */
 export function ok<T>(data: T, status = 200) {
   return Response.json(data, { status })
 }
 
-export function err(message: string, status = 400, details?: unknown) {
-  return Response.json({ error: message, details }, { status })
+/**
+ * Structured error response.
+ * Always returns: { error: string, code: string, details?: any }
+ * HTTP status defaults to 400.
+ */
+export function err(
+  message: string,
+  status = 400,
+  details?: unknown,
+  code = 'BAD_REQUEST',
+) {
+  return Response.json(
+    { error: message, code, details },
+    { status },
+  )
 }
 
+/** Unauthenticated response — use when no session */
+export function unauthorized(message = 'Unauthorized') {
+  return err(message, 401, undefined, 'UNAUTHORIZED')
+}
+
+/** Forbidden response — use when user lacks the required role */
+export function forbidden(requiredRole: string, userRole?: string) {
+  return err(
+    `Forbidden — requires role: ${requiredRole}`,
+    403,
+    { requiredRole, userRole },
+    'FORBIDDEN',
+  )
+}
+
+/**
+ * Audit log helper — uses the session user when available,
+ * falls back to a system user otherwise.
+ */
 export async function logAudit(opts: {
   action: string
   entityType: string
@@ -66,10 +120,13 @@ export async function logAudit(opts: {
   userId?: string
 }) {
   try {
+    const user = await getCurrentUser()
+    const userId = opts.userId ?? user?.id ?? 'system'
+    const orgId = user?.organizationId ?? DEMO_ORG_ID
     await db.auditLog.create({
       data: {
-        organizationId: DEMO_ORG_ID,
-        userId: opts.userId ?? DEMO_USER_ID,
+        organizationId: orgId,
+        userId,
         action: opts.action,
         entityType: opts.entityType,
         entityId: opts.entityId,
@@ -80,3 +137,5 @@ export async function logAudit(opts: {
     // Never fail the main op due to audit log failure
   }
 }
+
+export type { AuthUser, Role }
