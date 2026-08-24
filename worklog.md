@@ -57,3 +57,52 @@ Stage Summary:
   - USJournalERP-1.0.0-x64.tar.gz (26 MB)
 - Full authentication flow with bcrypt-hashed passwords
 - All API routes require session authentication
+
+---
+Task ID: windows-release-sync
+Agent: main
+Task: Push Windows ZIP to GitHub repo and set up auto-syncing for future updates
+
+Work Log:
+- Verified user added `.github/workflows/build.yml` via GitHub web UI (commit `5559d23`)
+- Found that electron/ directory and BUILD.md were never committed in initial push (lost during session disruption)
+- Recreated from scratch:
+  - electron/main.ts (Electron main process — spawns Next.js, manages userData DB path)
+  - electron/preload.ts (contextBridge for safe IPC)
+  - electron/tsconfig.json (separate TS config for Electron compilation)
+  - electron-builder.win.yml (Windows NSIS installer config)
+  - electron-builder.mac.yml (macOS DMG config)
+  - BUILD.md (full build guide)
+- Reinstalled dependencies (electron, electron-builder, @types/bcryptjs, bcryptjs)
+- Downloaded Windows Electron binary (`ELECTRON_INSTALL_PLATFORM=win32 node node_modules/electron/install.js`)
+- Compiled Electron main process (`tsc -p electron/tsconfig.json`)
+- Created `scripts/build-windows-portable.js` — builds Windows ZIP without Wine:
+  1. Copies Windows Electron runtime files
+  2. Renames electron.exe → USJournalERP.exe
+  3. Packs app.asar with compiled Electron main + preload
+  4. Copies Next.js standalone to resources/app/
+  5. Creates Start US Journal ERP.bat launcher
+  6. Creates README.txt with install instructions
+  7. Zips everything
+- Built Windows portable ZIP (219 MB)
+- Created GitHub release v1.0.0 via API and uploaded ZIP as release asset
+- Created GitHub release v1.0.1 (test of sync script)
+- Created `scripts/sync-windows-release.sh` — auto-rebuilds and re-uploads Windows ZIP
+- Set up local `.env` with GITHUB_TOKEN (gitignored) so the sync script can run without prompting
+- Pushed all new files to GitHub (commits 874eaa3, 1e1b480)
+- Token doesn't have `workflow` scope, so .github/workflows/build.yml cannot be updated via API
+  (User must edit it manually via GitHub web UI if changes are needed)
+
+Stage Summary:
+- Windows ZIP v1.0.0: https://github.com/mahmoudmohamedxx1-hue/US-Journal-ERP/releases/tag/v1.0.0
+- Windows ZIP v1.0.1: https://github.com/mahmoudmohamedxx1-hue/US-Journal-ERP/releases/tag/v1.0.1
+- Sync script: `bash scripts/sync-windows-release.sh v1.0.2` (auto-rebuilds + reuploads)
+- Source code on GitHub: https://github.com/mahmoudmohamedxx1-hue/US-Journal-ERP
+- 6 commits on main branch
+
+Next Steps for Future Updates:
+- Any time the user asks for a change, after making it:
+  1. Commit and push to GitHub
+  2. Run `bash scripts/sync-windows-release.sh v1.0.X` (increment version) to rebuild Windows ZIP
+- The script reads GITHUB_TOKEN from .env (already configured)
+- New release will appear at https://github.com/mahmoudmohamedxx1-hue/US-Journal-ERP/releases
