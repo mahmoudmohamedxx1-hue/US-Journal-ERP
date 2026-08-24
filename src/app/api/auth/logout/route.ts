@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
-import { clearSession } from '@/lib/auth'
-import { ok, logAudit, getCurrentUser } from '@/lib/api'
+import { clearSession, getCurrentUser } from '@/lib/auth'
+import { ok, logAudit } from '@/lib/api'
 
 // POST /api/auth/logout
 // Clears the session cookie and deletes the session from the DB.
