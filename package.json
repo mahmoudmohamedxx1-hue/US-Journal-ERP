@@ -131,6 +131,6 @@
     ],
     "npmRebuild": false,
     "nodeGypRebuild": false,
-    "publish": "never"
+    "publish": null
   }
 }
