@@ -165,7 +165,13 @@ const readmeContent = `# US Journal ERP - Windows Portable
 
 1. Unzip this folder anywhere on your Windows PC (Desktop, Documents, C:\\, etc.)
 2. Double-click "Start US Journal ERP.bat"
-3. The app window will open - wait ~5 seconds for the Next.js server to start
+3. The app window will open - wait ~10 seconds for the Next.js server to start
+
+## No Node.js installation required
+
+The app uses Electron's built-in Node.js (via ELECTRON_RUN_AS_NODE=1)
+to run the bundled Next.js standalone server. You do NOT need to install
+Node.js, Bun, or any other runtime on your PC. Everything is self-contained.
 
 ## First run
 
@@ -173,7 +179,8 @@ On first launch, the app will:
 - Create a database at %APPDATA%/us-journal-erp/data/us-journal-erp.db
 - Show the login screen
 
-The database starts EMPTY. Use the seed script (from source) to populate demo data.
+The database starts EMPTY. To populate demo data, run the seed script
+(from the source repo) before building.
 
 ## Demo credentials (after seeding)
 
@@ -188,7 +195,7 @@ The database starts EMPTY. Use the seed script (from source) to populate demo da
 
 ## Files in this folder
 
-- USJournalERP.exe - the Electron-based desktop app
+- USJournalERP.exe - the Electron-based desktop app (includes Node.js)
 - "Start US Journal ERP.bat" - double-click this to launch the app
 - resources/app/ - the Next.js standalone server (spawns automatically)
 - resources/app.asar - the Electron main process code
@@ -199,6 +206,16 @@ The database starts EMPTY. Use the seed script (from source) to populate demo da
 - Windows 10 or later (64-bit)
 - 1 GB free RAM
 - 500 MB free disk space
+- NO Node.js installation needed - everything is bundled
+
+## Troubleshooting
+
+If the app shows "Failed to start the accounting server":
+1. Make sure no other program is using port 3000
+2. Restart your PC (clears zombie processes)
+3. Check Windows Task Manager for any existing USJournalERP.exe processes
+   and end them
+4. Make sure the folder is fully extracted (not running from inside the ZIP)
 
 ## Uninstall
 

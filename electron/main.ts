@@ -10,7 +10,7 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { spawn, ChildProcess } from 'child_process'
 import { join } from 'path'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, appendFileSync } from 'fs'
 
 const isDev = !app.isPackaged
 const PORT = 3000
@@ -18,6 +18,21 @@ const URL = `http://localhost:${PORT}`
 
 let nextServer: ChildProcess | null = null
 let mainWindow: BrowserWindow | null = null
+
+/**
+ * Log to both console AND a log file in userData so users can
+ * troubleshoot when the app fails to start.
+ */
+function log(message: string) {
+  console.log(message)
+  try {
+    const userData = app.getPath('userData')
+    if (!existsSync(userData)) mkdirSync(userData, { recursive: true })
+    appendFileSync(join(userData, 'usj-app.log'), `[${new Date().toISOString()}] ${message}\n`)
+  } catch {
+    // ignore
+  }
+}
 
 /**
  * In production, the SQLite DB lives in the user's app data directory
@@ -40,7 +55,7 @@ function ensureDatabasePath() {
     // Fallback to cwd if resourcesPath is not writable
     writeFileSync(join(process.cwd(), '.env'), `DATABASE_URL=file:${dbPath}\n`)
   }
-  console.log(`[Electron] Database path: ${dbPath}`)
+  log(`[Electron] Database path: ${dbPath}`)
   return dbPath
 }
 
@@ -48,37 +63,48 @@ function ensureDatabasePath() {
  * Start the Next.js server.
  * In dev, we assume `bun run dev` is already running on port 3000.
  * In production, we spawn the standalone server bundled with the app.
+ *
+ * IMPORTANT: We use Electron's built-in Node.js (via process.execPath +
+ * ELECTRON_RUN_AS_NODE=1) instead of spawning external `node`. This means
+ * the user doesn't need to install Node.js separately — everything they
+ * need is bundled in the portable ZIP.
  */
 function startNextServer() {
   if (isDev) {
-    console.log('[Electron] Dev mode — assuming Next.js dev server is running on port 3000')
+    log('[Electron] Dev mode — assuming Next.js dev server is running on port 3000')
     return
   }
 
   const serverPath = join(process.resourcesPath, 'app', 'server.js')
-  console.log(`[Electron] Starting Next.js server: ${serverPath}`)
+  log(`[Electron] Starting Next.js server: ${serverPath}`)
+  log(`[Electron] Using Electron's bundled Node.js: ${process.execPath}`)
 
   const env: Record<string, string> = {
     ...process.env as Record<string, string>,
     NODE_ENV: 'production',
     PORT: String(PORT),
     HOSTNAME: '127.0.0.1',
+    // Tell Electron to run as plain Node.js (no GUI)
+    ELECTRON_RUN_AS_NODE: '1',
   }
 
-  nextServer = spawn('node', [serverPath], {
+  // process.execPath is the path to the Electron binary (USJournalERP.exe).
+  // With ELECTRON_RUN_AS_NODE=1, it behaves like Node.js — perfect for
+  // spawning our Next.js standalone server without requiring Node.js install.
+  nextServer = spawn(process.execPath, [serverPath], {
     env,
     cwd: join(process.resourcesPath, 'app'),
     stdio: ['ignore', 'pipe', 'pipe'],
   })
 
   nextServer.stdout?.on('data', (data) => {
-    console.log(`[Next.js] ${data.toString().trim()}`)
+    log(`[Next.js] ${data.toString().trim()}`)
   })
   nextServer.stderr?.on('data', (data) => {
-    console.error(`[Next.js error] ${data.toString().trim()}`)
+    log(`[Next.js error] ${data.toString().trim()}`)
   })
   nextServer.on('exit', (code) => {
-    console.log(`[Next.js] Server exited with code ${code}`)
+    log(`[Next.js] Server exited with code ${code}`)
     nextServer = null
   })
 }
@@ -142,7 +168,7 @@ async function createWindow() {
 
   const ok = await waitForServer()
   if (!ok) {
-    mainWindow?.loadURL(`data:text/html,<html><body style="font-family:sans-serif;padding:40px"><h1>Failed to start server</h1><p>The Next.js server did not respond in time. Please restart the application.</p></body></html>`)
+    mainWindow?.loadURL(`data:text/html,<html><body style="font-family:sans-serif;padding:40px;background:#0f172a;color:#f1f5f9"><h1 style="color:#14b8a6">US Journal ERP</h1><h2>Failed to start the accounting server</h2><p>The Next.js server did not respond in time.</p><p style="color:#94a3b8">Please restart the application. If the problem persists, check that no other program is using port ${PORT}.</p><p style="color:#94a3b8;font-size:11px">Server path: ${join(process.resourcesPath, 'app', 'server.js')}</p></body></html>`)
     return
   }
   mainWindow?.loadURL(URL)
