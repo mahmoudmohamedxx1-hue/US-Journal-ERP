@@ -132,11 +132,6 @@
         "from": ".next/static",
         "to": "app/.next/static",
         "filter": ["**/*"]
-      },
-      {
-        "from": "public",
-        "to": "app/public",
-        "filter": ["**/*"]
       }
     ],
     "npmRebuild": false,
