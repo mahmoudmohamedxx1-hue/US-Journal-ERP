@@ -5,6 +5,10 @@ npmRebuild: false
 nodeGypRebuild: false
 publish: null
 
+directories:
+  output: release
+  buildResources: build
+
 linux:
   target:
     - target: AppImage
