@@ -31,7 +31,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env.local
+.env.production
+.env.*.local
+# NOTE: .env IS committed because it only contains the SQLite path (no secrets).
+# This is needed so CI workflows can run `bun run db:push` without setup.
 
 # vercel
 .vercel
