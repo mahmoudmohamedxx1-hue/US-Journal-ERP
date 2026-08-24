@@ -1,6 +1,9 @@
 # macOS-specific electron-builder config
 # Pass via: electron-builder --mac --config electron-builder.mac.yml
 
+npmRebuild: false
+nodeGypRebuild: false
+
 mac:
   target:
     - target: dmg

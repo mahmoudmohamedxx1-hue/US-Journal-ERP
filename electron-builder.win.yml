@@ -1,6 +1,9 @@
 # Windows-specific electron-builder config
 # Pass via: electron-builder --win --config electron-builder.win.yml
 
+npmRebuild: false
+nodeGypRebuild: false
+
 win:
   target:
     - target: nsis

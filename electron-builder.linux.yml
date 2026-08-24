@@ -1,6 +1,9 @@
 # Linux-specific electron-builder config
 # Pass via: electron-builder --linux --config electron-builder.linux.yml
 
+npmRebuild: false
+nodeGypRebuild: false
+
 linux:
   target:
     - target: AppImage
