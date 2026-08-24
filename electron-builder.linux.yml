@@ -1,20 +1,24 @@
 # Linux-specific electron-builder config
-# Extends the base config in package.json's "build" field
-# Usage: electron-builder --linux --config electron-builder.linux.yml
+# Pass via: electron-builder --linux --config electron-builder.linux.yml
+#
+# Note: electron-builder v26 schema validation rejects a `linux:` block in
+# the config when the `--linux` CLI flag is used. So we put linux-specific
+# settings at the top level — they get merged into the `linux:` section
+# automatically when `--linux` is specified.
 
-linux:
-  target:
-    - target: AppImage
-      arch:
-        - x64
-    - target: tar.gz
-      arch:
-        - x64
-  category: Office
-  icon: build/icons
-  maintainer: US Journal ERP
-  vendor: US Journal ERP
-  artifactName: USJournalERP-${version}-${arch}.${ext}
+target:
+  - target: AppImage
+    arch:
+      - x64
+  - target: tar.gz
+    arch:
+      - x64
+
+category: Office
+icon: build/icons
+maintainer: US Journal ERP
+vendor: US Journal ERP
+artifactName: USJournalERP-${version}-${arch}.${ext}
 
 appImage:
   artifactName: USJournalERP-${version}.${ext}
