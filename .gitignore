@@ -60,7 +60,7 @@ server.log
 # Electron build artifacts
 /release/
 /electron/dist/
-/build/
+/build/*.tsbuildinfo
 /download/*.zip
 /download/*.AppImage
 /download/*.tar.gz
