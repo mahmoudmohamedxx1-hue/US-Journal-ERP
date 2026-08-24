@@ -23,7 +23,7 @@
     "dist": "electron-builder",
     "dist:win": "bun run predist && electron-builder --win --config electron-builder.win.yml",
     "dist:mac": "bun run predist && electron-builder --mac --config electron-builder.mac.yml",
-    "dist:linux": "bun run predist && electron-builder --linux"
+    "dist:linux": "bun run predist && electron-builder --linux --config electron-builder.linux.yml"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -138,20 +138,6 @@
         "to": "app/public",
         "filter": ["**/*"]
       }
-    ],
-    "linux": {
-      "target": [
-        { "target": "AppImage", "arch": ["x64"] },
-        { "target": "tar.gz", "arch": ["x64"] }
-      ],
-      "category": "Office",
-      "icon": "build/icons",
-      "maintainer": "US Journal ERP",
-      "vendor": "US Journal ERP",
-      "artifactName": "USJournalERP-${version}-${arch}.${ext}"
-    },
-    "appImage": {
-      "artifactName": "USJournalERP-${version}.${ext}"
-    }
+    ]
   }
 }

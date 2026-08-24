@@ -1,0 +1,20 @@
+# Linux-specific electron-builder config
+# Extends the base config in package.json's "build" field
+# Usage: electron-builder --linux --config electron-builder.linux.yml
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: tar.gz
+      arch:
+        - x64
+  category: Office
+  icon: build/icons
+  maintainer: US Journal ERP
+  vendor: US Journal ERP
+  artifactName: USJournalERP-${version}-${arch}.${ext}
+
+appImage:
+  artifactName: USJournalERP-${version}.${ext}
