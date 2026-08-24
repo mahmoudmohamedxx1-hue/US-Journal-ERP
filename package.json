@@ -138,6 +138,8 @@
         "to": "app/public",
         "filter": ["**/*"]
       }
-    ]
+    ],
+    "npmRebuild": false,
+    "nodeGypRebuild": false
   }
 }
