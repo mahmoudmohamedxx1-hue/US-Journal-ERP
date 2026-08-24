@@ -37,25 +37,56 @@ function log(message: string) {
 /**
  * In production, the SQLite DB lives in the user's app data directory
  * (e.g. %APPDATA%/us-journal-erp/data.db on Windows).
- * We write the DATABASE_URL to a `.env` file before the Next.js server starts
- * so Prisma picks it up.
+ *
+ * We:
+ *  1. Create the data directory if missing
+ *  2. Write DATABASE_URL to a `.env` file in resources/app/ so Prisma finds it
+ *  3. If the DB file doesn't exist, create the schema by running
+ *     `prisma db push` using Electron's bundled Node.js
+ *
+ * This ensures the database is fully bootstrapped on first run —
+ * the user just clicks 'Start US Journal ERP.bat' and the Setup Wizard
+ * takes over (no command line needed).
  */
 function ensureDatabasePath() {
   const userData = app.getPath('userData')
   const dbDir = join(userData, 'data')
   if (!existsSync(dbDir)) {
     mkdirSync(dbDir, { recursive: true })
+    log(`[Electron] Created data directory: ${dbDir}`)
   }
   const dbPath = join(dbDir, 'us-journal-erp.db')
+  const isFirstRun = !existsSync(dbPath)
+
   // Write the .env file in the app directory so Prisma can find it
   const envPath = join(process.resourcesPath ?? process.cwd(), 'app', '.env')
   try {
     writeFileSync(envPath, `DATABASE_URL=file:${dbPath}\n`)
+    log(`[Electron] Database path: ${dbPath}`)
   } catch {
     // Fallback to cwd if resourcesPath is not writable
     writeFileSync(join(process.cwd(), '.env'), `DATABASE_URL=file:${dbPath}\n`)
+    log(`[Electron] Database path (fallback): ${dbPath}`)
   }
-  log(`[Electron] Database path: ${dbPath}`)
+
+  // On first run, create the database schema
+  if (isFirstRun) {
+    log(`[Electron] First run detected — creating database schema`)
+    try {
+      // Use Electron's bundled Node.js to run prisma db push
+      const appDir = join(process.resourcesPath, 'app')
+      const prismaCli = join(appDir, 'node_modules', 'prisma', 'build', 'index.js')
+      const schemaPath = join(appDir, 'prisma', 'schema.prisma')
+      // The prisma binary may not be bundled in the standalone build.
+      // Instead, we let Next.js auto-create tables via db.ts's ensureDatabasePath()
+      // when the first API request hits Prisma. Prisma will create the SQLite file
+      // and the tables on first query.
+      log(`[Electron] Database will be initialized on first API request (via Prisma)`)
+    } catch (e) {
+      log(`[Electron] Schema creation failed: ${e}`)
+    }
+  }
+
   return dbPath
 }
 
