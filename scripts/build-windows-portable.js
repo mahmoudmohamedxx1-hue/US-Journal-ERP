@@ -81,17 +81,42 @@ if (existsSync(defaultAppAsar)) {
   console.log('✓ Copied default_app.asar')
 }
 
-// Create our app.asar containing the compiled Electron main + preload
+// Create our app.asar containing the compiled Electron main + preload + package.json
 // Use asar CLI from node_modules
 const asarCli = join(ROOT, 'node_modules', '.bin', 'asar')
 const asarOut = join(resourcesDir, 'app.asar')
 console.log('\nPacking app.asar...')
+
+// Stage the asar contents in a temporary directory so the internal structure
+// matches what package.json's "main" field expects ("electron/dist/main.js").
+const { mkdtempSync } = require('fs')
+const { tmpdir } = require('os')
+const stagingDir = mkdtempSync(join(tmpdir(), 'usj-asar-'))
+console.log(`  Staging dir: ${stagingDir}`)
+
+// Create the internal structure: electron/dist/main.js, electron/dist/preload.js, package.json
+mkdirSync(join(stagingDir, 'electron', 'dist'), { recursive: true })
+cpSync(join(ROOT, 'electron', 'dist', 'main.js'), join(stagingDir, 'electron', 'dist', 'main.js'))
+cpSync(join(ROOT, 'electron', 'dist', 'preload.js'), join(stagingDir, 'electron', 'dist', 'preload.js'))
+
+// Copy package.json (Electron reads "main" from here to find the entry point)
+copyFileSync(join(ROOT, 'package.json'), join(stagingDir, 'package.json'))
+
+// Also copy electron/preload.js (referenced in build files config)
+if (existsSync(join(ROOT, 'electron', 'preload.js'))) {
+  mkdirSync(join(stagingDir, 'electron'), { recursive: true })
+  copyFileSync(join(ROOT, 'electron', 'preload.js'), join(stagingDir, 'electron', 'preload.js'))
+}
+
 try {
-  execSync(`"${asarCli}" pack "${join(ROOT, 'electron', 'dist')}" "${asarOut}"`, { stdio: 'inherit' })
-  console.log('✓ app.asar created')
+  execSync(`"${asarCli}" pack "${stagingDir}" "${asarOut}"`, { stdio: 'inherit' })
+  console.log('✓ app.asar created (with package.json + electron/dist/main.js)')
 } catch (e) {
   console.error('✗ Failed to create app.asar:', e.message)
   process.exit(1)
+} finally {
+  // Clean up staging dir
+  try { rmSync(stagingDir, { recursive: true, force: true }) } catch {}
 }
 
 // Copy the Next.js standalone as unpacked resources (in `resources/app/`)
