@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/users
@@ -7,7 +7,7 @@ export async function GET() {
   const user = await getCurrentUser()
   if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const users = await db.user.findMany({
-    where: { organizationId: DEMO_ORG_ID },
+    where: { organizationId: user.organizationId },
     orderBy: { name: 'asc' },
     select: {
       id: true,

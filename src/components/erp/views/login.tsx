@@ -26,8 +26,8 @@ interface AuthUser {
 }
 
 export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }) {
-  const [email, setEmail] = React.useState('controller@usjournal.test')
-  const [password, setPassword] = React.useState('Control@2026')
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -57,11 +57,6 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
     } finally {
       setLoading(false)
     }
-  }
-
-  const quickFill = (em: string, pw: string) => {
-    setEmail(em)
-    setPassword(pw)
   }
 
   return (
@@ -100,7 +95,7 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
 
           <Separator className="bg-primary-foreground/20 my-2" />
           <div className="text-xs text-primary-foreground/60">
-            All financial data is stored locally in an encrypted SQLite database.
+            All financial data is stored locally in a SQLite database.
             No data leaves your machine.
           </div>
         </div>
@@ -133,6 +128,7 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9"
                     autoComplete="email"
+                    autoFocus
                     required
                   />
                 </div>
@@ -181,18 +177,8 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
 
             <Separator className="my-4" />
 
-            <div className="space-y-2">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Demo Accounts (click to fill)
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <QuickAccount label="Controller" email="controller@usjournal.test" password="Control@2026" onClick={quickFill} />
-                <QuickAccount label="Administrator" email="admin@usjournal.test" password="Admin@2026" onClick={quickFill} />
-                <QuickAccount label="Approver" email="approver@usjournal.test" password="Approve@2026" onClick={quickFill} />
-                <QuickAccount label="Accountant" email="accountant@usjournal.test" password="Accounts@2026" onClick={quickFill} />
-                <QuickAccount label="Auditor" email="auditor@usjournal.test" password="Audit@2026" onClick={quickFill} />
-                <QuickAccount label="Viewer" email="viewer@usjournal.test" password="View@2026" onClick={quickFill} />
-              </div>
+            <div className="text-xs text-muted-foreground text-center">
+              Need an account? Contact your system administrator.
             </div>
           </CardContent>
         </Card>
@@ -212,28 +198,5 @@ function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; 
         <div className="text-xs text-primary-foreground/70">{desc}</div>
       </div>
     </div>
-  )
-}
-
-function QuickAccount({
-  label,
-  email,
-  password,
-  onClick,
-}: {
-  label: string
-  email: string
-  password: string
-  onClick: (email: string, password: string) => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(email, password)}
-      className="rounded-md border bg-card px-2 py-1.5 text-left hover:border-accent hover:bg-accent/5 transition-colors"
-    >
-      <div className="text-xs font-medium">{label}</div>
-      <div className="text-[10px] text-muted-foreground truncate">{email}</div>
-    </button>
   )
 }

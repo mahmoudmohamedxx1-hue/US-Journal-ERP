@@ -1,6 +1,24 @@
 /**
- * US Journal ERP — Seed script
- * Generates realistic demo data for an accounting ERP.
+ * US Journal ERP — DEV-ONLY Seed Script
+ *
+ * ⚠️  This script is for DEVELOPMENT AND TESTING ONLY.
+ * ⚠️  It is NOT used by the production desktop app.
+ *
+ * The production app uses the First-run Setup Wizard (see
+ * src/app/api/setup/initialize/route.ts) which creates ONLY:
+ *   - 1 organization (the user's company)
+ *   - 1 administrator user (chosen by the user)
+ *
+ * This seed script populates the database with DEMO data:
+ *   - 6 demo users (one per role) with known passwords
+ *   - 66 chart of accounts (sample structure)
+ *   - 7 vendors, 6 customers, 4 bank accounts
+ *   - 20 sample journal entries across all workflow statuses
+ *   - 12 fiscal periods (FY 2026)
+ *
+ * Developers can run this to quickly populate a test database:
+ *   bun run db:push
+ *   bun run seed
  *
  * All monetary values are stored as Int (cents) — decimal-safe, no float drift.
  *

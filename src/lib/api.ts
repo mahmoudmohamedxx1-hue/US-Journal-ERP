@@ -1,44 +1,58 @@
 /**
  * Shared API helpers — session-aware auth + structured JSON error responses.
+ *
+ * IMPORTANT: This is a REAL ERP. There is no demo org fallback.
+ * Every API route requires authentication and resolves the org from
+ * the authenticated session. The Setup Wizard is the only way to
+ * create the organization and first admin user.
  */
 import { db } from './db'
 import { getCurrentUser, type AuthUser, type Role } from './auth'
 
-// Fallback org ID (used only when no session — e.g. login page SSR).
-export const DEMO_ORG_ID = 'org-us-journal'
-
-export async function getCurrentOrg() {
-  const user = await getCurrentUser()
-  const orgId = user?.organizationId ?? DEMO_ORG_ID
-  return db.organization.findUniqueOrThrow({ where: { id: orgId } })
-}
-
 /**
  * Returns the currently-authenticated user, or null.
+ * In a real ERP, every API route should call requireUser() or requireRole()
+ * — there is no DEMO_ORG_ID fallback.
  */
 export async function getCurrentAuthUser(): Promise<AuthUser | null> {
   return getCurrentUser()
 }
 
 /**
- * Returns the current user's organization ID.
- * Falls back to the demo org if no session (SSR on login page).
+ * Returns the current user's organization.
+ * Throws if not authenticated — callers should use requireUser() first.
  */
-export async function getCurrentOrgId(): Promise<string> {
+export async function getCurrentOrg() {
   const user = await getCurrentUser()
-  return user?.organizationId ?? DEMO_ORG_ID
+  if (!user) {
+    throw new Error('Not authenticated — call requireUser() before getCurrentOrg()')
+  }
+  return db.organization.findUniqueOrThrow({ where: { id: user.organizationId } })
 }
 
 /**
- * Returns the current user's ID, or null if not authenticated.
+ * Returns the current user's organization ID.
+ * Throws if not authenticated.
  */
-export async function getCurrentUserId(): Promise<string | null> {
+export async function getCurrentOrgId(): Promise<string> {
   const user = await getCurrentUser()
-  return user?.id ?? null
+  if (!user) {
+    throw new Error('Not authenticated — call requireUser() before getCurrentOrgId()')
+  }
+  return user.organizationId
 }
 
-// Backward-compat export (deprecated — use getCurrentUserId() instead).
-export const DEMO_USER_ID = 'u-ctrl'
+/**
+ * Returns the current user's ID.
+ * Throws if not authenticated.
+ */
+export async function getCurrentUserId(): Promise<string> {
+  const user = await getCurrentUser()
+  if (!user) {
+    throw new Error('Not authenticated — call requireUser() before getCurrentUserId()')
+  }
+  return user.id
+}
 
 export function formatMoney(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
@@ -109,8 +123,9 @@ export function forbidden(requiredRole: string, userRole?: string) {
 }
 
 /**
- * Audit log helper — uses the session user when available,
- * falls back to a system user otherwise.
+ * Audit log helper — uses the session user when available.
+ * If no session (e.g. setup endpoint), pass userId + organizationId
+ * explicitly via opts.
  */
 export async function logAudit(opts: {
   action: string
@@ -118,11 +133,20 @@ export async function logAudit(opts: {
   entityId?: string
   description: string
   userId?: string
+  organizationId?: string
 }) {
   try {
-    const user = await getCurrentUser()
-    const userId = opts.userId ?? user?.id ?? 'system'
-    const orgId = user?.organizationId ?? DEMO_ORG_ID
+    let userId = opts.userId
+    let orgId = opts.organizationId
+    if (!userId || !orgId) {
+      const user = await getCurrentUser()
+      userId = userId ?? user?.id ?? 'system'
+      orgId = orgId ?? user?.organizationId
+    }
+    if (!orgId) {
+      // No org context — skip audit log silently (e.g. during setup)
+      return
+    }
     await db.auditLog.create({
       data: {
         organizationId: orgId,

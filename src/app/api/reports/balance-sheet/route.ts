@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/reports/balance-sheet — as-of reporting date
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const journals = await db.journal.findMany({
     where: {
-      organizationId: DEMO_ORG_ID,
+      organizationId: user.organizationId,
       status: 'Posted',
       journalDate: { lte: asOf },
     },
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
   }
 
   const accounts = await db.account.findMany({
-    where: { organizationId: DEMO_ORG_ID },
+    where: { organizationId: user.organizationId },
     orderBy: { code: 'asc' },
   })
 

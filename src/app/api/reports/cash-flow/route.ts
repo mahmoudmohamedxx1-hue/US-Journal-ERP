@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/reports/cash-flow — indirect method (Net Income → operating adjustments → investing → financing)
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   const journals = await db.journal.findMany({
     where: {
-      organizationId: DEMO_ORG_ID,
+      organizationId: user.organizationId,
       status: 'Posted',
       journalDate: { gte: from, lte: to },
     },
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   })
 
   const accounts = await db.account.findMany({
-    where: { organizationId: DEMO_ORG_ID },
+    where: { organizationId: user.organizationId },
   })
 
   const bal: Record<string, { debit: number; credit: number }> = {}

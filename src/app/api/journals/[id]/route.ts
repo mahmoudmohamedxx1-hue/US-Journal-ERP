@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/journals/[id] — fetch full journal detail with lines, approvals, audit history
@@ -12,7 +12,7 @@ export async function GET(
   if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: DEMO_ORG_ID },
+    where: { id, organizationId: user.organizationId },
     include: {
       lines: {
         include: { account: true },
@@ -44,7 +44,7 @@ export async function PATCH(
   const body = await req.json().catch(() => ({}))
 
   const existing = await db.journal.findFirst({
-    where: { id, organizationId: DEMO_ORG_ID },
+    where: { id, organizationId: user.organizationId },
   })
   if (!existing) return err('Journal not found', 404)
   if (existing.status !== 'Draft') {
@@ -83,7 +83,7 @@ export async function PATCH(
   for (const l of normalizedLines) {
     if (!l.accountId && l.accountCode) {
       const acct = await db.account.findFirst({
-        where: { organizationId: DEMO_ORG_ID, code: l.accountCode },
+        where: { organizationId: user.organizationId, code: l.accountCode },
       })
       if (!acct) return err(`Account code ${l.accountCode} not found`, 422)
       l.accountId = acct.id
@@ -157,7 +157,7 @@ export async function DELETE(
   if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const { id } = await params
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: DEMO_ORG_ID },
+    where: { id, organizationId: user.organizationId },
   })
   if (!journal) return err('Journal not found', 404)
   if (journal.status !== 'Draft') {

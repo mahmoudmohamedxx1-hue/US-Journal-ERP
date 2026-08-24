@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/customers
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const includeInvoices = url.searchParams.get('withInvoices') === '1'
   const activeOnly = url.searchParams.get('active') !== '0'
 
-  const where: Record<string, unknown> = { organizationId: DEMO_ORG_ID }
+  const where: Record<string, unknown> = { organizationId: user.organizationId }
   if (activeOnly) where.active = true
 
   const customers = await db.customer.findMany({

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/journals — list with filters & pagination
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(url.searchParams.get('page') || '1')
   const pageSize = parseInt(url.searchParams.get('pageSize') || '50')
 
-  const where: Record<string, unknown> = { organizationId: DEMO_ORG_ID }
+  const where: Record<string, unknown> = { organizationId: user.organizationId }
   if (status) where.status = status
   if (source) where.source = source
   if (search) {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
   for (const l of normalizedLines) {
     if (!l.accountId && l.accountCode) {
       const acct = await db.account.findFirst({
-        where: { organizationId: DEMO_ORG_ID, code: l.accountCode },
+        where: { organizationId: user.organizationId, code: l.accountCode },
       })
       if (!acct) return err(`Account code ${l.accountCode} not found`, 422)
       l.accountId = acct.id
@@ -136,13 +136,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate next journal number
-  const count = await db.journal.count({ where: { organizationId: DEMO_ORG_ID } })
+  const count = await db.journal.count({ where: { organizationId: user.organizationId } })
   const journalNumber = `JE-2026-${String(count + 1).padStart(4, '0')}`
 
   // Find fiscal period for journalDate
   const jd = new Date(journalDate)
   const fy = await db.fiscalYear.findFirst({
-    where: { organizationId: DEMO_ORG_ID, startDate: { lte: jd }, endDate: { gte: jd } },
+    where: { organizationId: user.organizationId, startDate: { lte: jd }, endDate: { gte: jd } },
   })
   let periodId: string | null = null
   if (fy) {
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
 
   const journal = await db.journal.create({
     data: {
-      organizationId: DEMO_ORG_ID,
+      organizationId: user.organizationId,
       journalNumber,
       journalDate: jd,
       fiscalPeriodId: periodId,

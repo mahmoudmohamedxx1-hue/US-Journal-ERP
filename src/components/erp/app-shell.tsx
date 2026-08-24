@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useErpStore, type ErpView } from '@/lib/erp-store'
 import { useAuth } from '@/app/page'
+import { OrgSwitcher } from '@/components/erp/org-switcher'
 
 interface NavItem {
   id: ErpView
@@ -198,31 +199,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Settings className="h-5 w-5" />
           </button>
 
-          {/* Org switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2 -ml-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground text-[10px] font-bold">
-                  UJ
-                </div>
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-sm font-medium">US Journal Holdings</span>
-                  <span className="text-[10px] text-muted-foreground">FY 2026</span>
-                </div>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>Organizations</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-0.5">
-                <span className="text-sm font-medium">US Journal Holdings</span>
-                <span className="text-[10px] text-muted-foreground">
-                  US-84-29384765 • USD
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Org switcher — shows the authenticated user's organization */}
+          <OrgSwitcher />
 
           {/* Search */}
           <div className="hidden md:flex items-center flex-1 max-w-md">
@@ -253,9 +231,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Bell className="h-4 w-4" />
               <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
             </Button>
-            <Badge variant="outline" className="hidden md:inline-flex text-xs">
-              Live demo
-            </Badge>
           </div>
         </header>
 

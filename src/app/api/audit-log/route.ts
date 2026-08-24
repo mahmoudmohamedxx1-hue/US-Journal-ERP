@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/audit-log — most recent first, paginated
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const action = url.searchParams.get('action')
   const entityType = url.searchParams.get('entityType')
 
-  const where: Record<string, unknown> = { organizationId: DEMO_ORG_ID }
+  const where: Record<string, unknown> = { organizationId: user.organizationId }
   if (action) where.action = action
   if (entityType) where.entityType = entityType
 

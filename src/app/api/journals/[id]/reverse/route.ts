@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // POST /api/journals/[id]/reverse — create a reversal of a Posted journal
@@ -13,7 +13,7 @@ export async function POST(
   const { id } = await params
 
   const original = await db.journal.findFirst({
-    where: { id, organizationId: DEMO_ORG_ID },
+    where: { id, organizationId: user.organizationId },
     include: { lines: { include: { account: true } } },
   })
   if (!original) return err('Journal not found', 404)
@@ -25,7 +25,7 @@ export async function POST(
   }
 
   // Generate reversal number
-  const count = await db.journal.count({ where: { organizationId: DEMO_ORG_ID } })
+  const count = await db.journal.count({ where: { organizationId: user.organizationId } })
   const reversalNumber = `JE-2026-${String(count + 1).padStart(4, '0')}`
 
   // Reverse debit/credit on every line
@@ -43,7 +43,7 @@ export async function POST(
   const reversal = await db.$transaction(async (tx) => {
     const rev = await tx.journal.create({
       data: {
-        organizationId: DEMO_ORG_ID,
+        organizationId: user.organizationId,
         journalNumber: reversalNumber,
         journalDate: new Date(),
         fiscalPeriodId: original.fiscalPeriodId,

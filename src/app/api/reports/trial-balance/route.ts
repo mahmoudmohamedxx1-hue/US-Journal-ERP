@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok } from "@/lib/api"
+import { ok } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/reports/trial-balance
@@ -17,14 +17,14 @@ export async function GET(req: NextRequest) {
     : new Date('2026-01-01')
 
   const accounts = await db.account.findMany({
-    where: { organizationId: DEMO_ORG_ID, subType: { not: 'Header' } },
+    where: { organizationId: user.organizationId, subType: { not: 'Header' } },
     orderBy: { code: 'asc' },
   })
 
   // Pull all posted journal lines in the period
   const journals = await db.journal.findMany({
     where: {
-      organizationId: DEMO_ORG_ID,
+      organizationId: user.organizationId,
       status: 'Posted',
       journalDate: { lte: asOf },
     },

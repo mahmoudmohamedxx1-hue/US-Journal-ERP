@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // POST /api/journals/[id]/post — post an Approved journal to the GL
@@ -14,7 +14,7 @@ export async function POST(
   const { id } = await params
 
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: DEMO_ORG_ID },
+    where: { id, organizationId: user.organizationId },
     include: { lines: true, fiscalPeriod: true },
   })
   if (!journal) return err('Journal not found', 404)

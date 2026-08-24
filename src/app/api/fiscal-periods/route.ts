@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err, logAudit } from "@/lib/api"
+import { ok, err, logAudit } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/fiscal-periods
@@ -8,7 +8,7 @@ export async function GET() {
   const user = await getCurrentUser()
   if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
   const years = await db.fiscalYear.findMany({
-    where: { organizationId: DEMO_ORG_ID },
+    where: { organizationId: user.organizationId },
     orderBy: { startDate: 'desc' },
     include: { periods: { orderBy: { periodNumber: 'asc' } } },
   })

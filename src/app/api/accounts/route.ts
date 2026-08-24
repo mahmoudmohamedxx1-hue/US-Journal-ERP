@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { DEMO_ORG_ID, ok, err } from "@/lib/api"
+import { ok, err } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/accounts — list all accounts (optionally filtered by type / active)
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const type = url.searchParams.get('type')
   const activeOnly = url.searchParams.get('active') === '1'
 
-  const where: Record<string, unknown> = { organizationId: DEMO_ORG_ID }
+  const where: Record<string, unknown> = { organizationId: user.organizationId }
   if (type) where.accountType = type
   if (activeOnly) where.active = true
 
@@ -36,13 +36,13 @@ export async function POST(req: NextRequest) {
   }
 
   const exists = await db.account.findFirst({
-    where: { organizationId: DEMO_ORG_ID, code: String(code) },
+    where: { organizationId: user.organizationId, code: String(code) },
   })
   if (exists) return err(`Account code ${code} already exists`, 409)
 
   const acct = await db.account.create({
     data: {
-      organizationId: DEMO_ORG_ID,
+      organizationId: user.organizationId,
       code: String(code),
       name: String(name),
       accountType: String(accountType),

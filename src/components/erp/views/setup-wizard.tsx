@@ -12,8 +12,6 @@ import {
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
-  Database,
-  Sparkles,
   Shield,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -25,32 +23,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
-type Step = 'welcome' | 'organization' | 'admin' | 'demo-data' | 'finalizing' | 'done'
+type Step = 'welcome' | 'organization' | 'admin' | 'finalizing' | 'done'
 
 interface SetupResult {
   organization: { id: string; name: string; currency: string }
   adminUser: { id: string; email: string; name: string; role: string }
-  seedDemoData: boolean
-  seedSummary: { accounts?: number; vendors?: number; customers?: number; fiscalPeriods?: number }
 }
 
 export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) => void }) {
   const [step, setStep] = React.useState<Step>('welcome')
 
   // Form state
-  const [orgName, setOrgName] = React.useState('US Journal Holdings')
-  const [adminName, setAdminName] = React.useState('Sarah Chen')
-  const [adminEmail, setAdminEmail] = React.useState('admin@usjournal.test')
+  const [orgName, setOrgName] = React.useState('')
+  const [adminName, setAdminName] = React.useState('')
+  const [adminEmail, setAdminEmail] = React.useState('')
   const [adminPassword, setAdminPassword] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
-  const [seedDemoData, setSeedDemoData] = React.useState(true)
   const [showPassword, setShowPassword] = React.useState(false)
 
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [result, setResult] = React.useState<SetupResult | null>(null)
 
-  const steps: Step[] = ['welcome', 'organization', 'admin', 'demo-data', 'finalizing']
+  const steps: Step[] = ['welcome', 'organization', 'admin', 'finalizing']
   const currentIdx = steps.indexOf(step)
 
   const handleInitialize = async () => {
@@ -76,7 +71,6 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
           adminName,
           adminEmail,
           adminPassword,
-          seedDemoData,
         }),
       })
       const data = await res.json()
@@ -86,10 +80,10 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
       setResult(data)
       setStep('done')
       toast.success('Setup complete! You can now sign in.')
-      setTimeout(() => onComplete(data), 2000)
+      setTimeout(() => onComplete(data), 2500)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Setup failed')
-      setStep('demo-data')  // go back to last interactive step
+      setStep('admin')
     } finally {
       setLoading(false)
     }
@@ -107,7 +101,7 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
               </div>
               <div className="flex-1">
                 <div className="text-xl font-semibold">US Journal ERP</div>
-                <div className="text-sm text-muted-foreground">First-run Setup Wizard</div>
+                <div className="text-sm text-muted-foreground">First-run Setup</div>
               </div>
               {step !== 'welcome' && step !== 'finalizing' && step !== 'done' && (
                 <Badge variant="outline" className="text-xs">
@@ -139,8 +133,9 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-semibold">Welcome to US Journal ERP</h2>
                   <p className="text-sm text-muted-foreground">
-                    This wizard will set up your organization, create an administrator account,
-                    and (optionally) populate demo data so you can explore the system immediately.
+                    This wizard will set up your organization and create the first administrator account.
+                    After setup, you can configure your chart of accounts, vendors, customers, and begin
+                    recording transactions.
                   </p>
                 </div>
 
@@ -149,14 +144,14 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                 <div className="grid gap-3">
                   <Feature icon={<Building2 className="h-4 w-4" />} title="Create Organization" desc="Set your company name and base currency" />
                   <Feature icon={<Shield className="h-4 w-4" />} title="Create Administrator" desc="First user with full Administrator role" />
-                  <Feature icon={<Database className="h-4 w-4" />} title="Optional Demo Data" desc="Chart of accounts, vendors, customers, fiscal periods" />
                 </div>
 
                 <Separator />
 
                 <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
                   <strong>Security note:</strong> Your password is bcrypt-hashed before storage.
-                  All data is stored locally in an encrypted SQLite database. No data leaves your machine.
+                  All financial data is stored locally in a SQLite database on this machine.
+                  No data leaves your computer.
                 </div>
 
                 <Button className="w-full" size="lg" onClick={() => setStep('organization')}>
@@ -178,7 +173,7 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="orgName">Organization Name</Label>
+                    <Label htmlFor="orgName">Organization Name <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <Building2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -186,9 +181,23 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
                         className="pl-9"
-                        placeholder="Acme Corporation"
+                        placeholder="Acme Corporation, LLC"
+                        autoFocus
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="legalName">Legal Name (optional)</Label>
+                    <Input
+                      id="legalName"
+                      placeholder="Acme Corporation, LLC — incorporated in Delaware"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="taxId">Tax ID (optional)</Label>
+                    <Input id="taxId" placeholder="EIN / VAT / Tax registration number" />
                   </div>
 
                   <div className="space-y-1.5">
@@ -219,13 +228,14 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                 <div>
                   <h2 className="text-lg font-semibold">Create the Administrator account</h2>
                   <p className="text-sm text-muted-foreground">
-                    This user will have full access to all modules including Users &amp; Roles, Fiscal Periods, and Organization settings.
+                    This user will have full access to all modules including Users &amp; Roles, Fiscal Periods,
+                    Chart of Accounts, and Organization settings.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="adminName">Full Name</Label>
+                    <Label htmlFor="adminName">Full Name <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -234,12 +244,13 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                         onChange={(e) => setAdminName(e.target.value)}
                         className="pl-9"
                         placeholder="Sarah Chen"
+                        autoFocus
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="adminEmail">Email</Label>
+                    <Label htmlFor="adminEmail">Email <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -248,14 +259,14 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
                         className="pl-9"
-                        placeholder="admin@company.com"
+                        placeholder="admin@yourcompany.com"
                         autoComplete="email"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="adminPassword">Password</Label>
+                    <Label htmlFor="adminPassword">Password <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -284,7 +295,7 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">Confirm Password <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -303,91 +314,6 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setStep('organization')}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => setStep('demo-data')}
-                    disabled={!adminName.trim() || !adminEmail.trim() || adminPassword.length < 8 || adminPassword !== confirmPassword}
-                  >
-                    Continue
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* === Step 4: Demo Data === */}
-            {step === 'demo-data' && (
-              <div className="space-y-5">
-                <div>
-                  <h2 className="text-lg font-semibold">Demo data</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Choose whether to populate the database with sample data so you can explore the system immediately.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => setSeedDemoData(true)}
-                    className={cn(
-                      'w-full text-left rounded-lg border p-4 transition-colors',
-                      seedDemoData ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40',
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-md shrink-0',
-                        seedDemoData ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground',
-                      )}>
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">Yes — populate demo data</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Includes 50+ chart of accounts, 7 vendors, 6 customers, 4 bank accounts, 12 fiscal periods, 4 tax codes, departments/locations/projects.
-                        </div>
-                        <div className="mt-2 flex gap-1 flex-wrap">
-                          <Badge variant="outline" className="text-[10px]">~50 accounts</Badge>
-                          <Badge variant="outline" className="text-[10px]">7 vendors</Badge>
-                          <Badge variant="outline" className="text-[10px]">6 customers</Badge>
-                          <Badge variant="outline" className="text-[10px]">12 periods</Badge>
-                        </div>
-                      </div>
-                      {seedDemoData && <CheckCircle2 className="h-5 w-5 text-accent shrink-0" />}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSeedDemoData(false)}
-                    className={cn(
-                      'w-full text-left rounded-lg border p-4 transition-colors',
-                      !seedDemoData ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40',
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-md shrink-0',
-                        !seedDemoData ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground',
-                      )}>
-                        <Database className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">No — start with empty database</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Only the organization + admin user will be created. You'll need to manually add accounts, vendors, customers, etc.
-                        </div>
-                      </div>
-                      {!seedDemoData && <CheckCircle2 className="h-5 w-5 text-accent shrink-0" />}
-                    </div>
-                  </button>
-                </div>
-
                 {error && (
                   <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                     {error}
@@ -395,28 +321,30 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                 )}
 
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setStep('admin')}>
+                  <Button variant="outline" onClick={() => setStep('organization')}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button className="flex-1" onClick={handleInitialize} disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {loading ? 'Setting up…' : 'Complete Setup'}
-                    {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                  <Button
+                    className="flex-1"
+                    onClick={handleInitialize}
+                    disabled={!adminName.trim() || !adminEmail.trim() || adminPassword.length < 8 || adminPassword !== confirmPassword}
+                  >
+                    Complete Setup
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* === Step 5: Finalizing === */}
+            {/* === Step 4: Finalizing === */}
             {step === 'finalizing' && (
               <div className="space-y-5 py-8 text-center">
                 <Loader2 className="mx-auto h-12 w-12 animate-spin text-accent" />
                 <div>
                   <h2 className="text-lg font-semibold">Setting up your workspace…</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Creating organization, admin user{seedDemoData ? ', and seeding demo data' : ''}.
-                    This takes ~5 seconds.
+                    Creating organization and administrator account. This takes ~3 seconds.
                   </p>
                 </div>
               </div>
@@ -439,16 +367,6 @@ export function SetupWizard({ onComplete }: { onComplete: (result: SetupResult) 
                   <Row label="Organization" value={result.organization.name} />
                   <Row label="Admin Email" value={result.adminUser.email} />
                   <Row label="Admin Role" value={result.adminUser.role} />
-                  {result.seedDemoData && (
-                    <>
-                      <Separator className="my-2" />
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Demo data seeded:</div>
-                      {result.seedSummary.accounts && <Row label="Chart of Accounts" value={`${result.seedSummary.accounts} accounts`} />}
-                      {result.seedSummary.vendors && <Row label="Vendors" value={`${result.seedSummary.vendors} vendors`} />}
-                      {result.seedSummary.customers && <Row label="Customers" value={`${result.seedSummary.customers} customers`} />}
-                      {result.seedSummary.fiscalPeriods && <Row label="Fiscal Periods" value={`${result.seedSummary.fiscalPeriods} periods (FY 2026)`} />}
-                    </>
-                  )}
                 </div>
 
                 <p className="text-xs text-muted-foreground">

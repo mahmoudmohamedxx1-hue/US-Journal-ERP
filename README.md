@@ -43,20 +43,26 @@ US Journal ERP is a production-grade accounting system built for growing busines
 
 ---
 
-## Demo Login Credentials
+## First-run Setup
 
-After seeding the database, the following accounts are available:
+When you launch the app for the first time on a fresh PC (empty database), it automatically shows a **First-run Setup Wizard** that walks you through:
 
-| Role          | Email                         | Password         |
-|---------------|-------------------------------|------------------|
-| Administrator | admin@usjournal.test          | Admin@2026       |
-| Controller    | controller@usjournal.test    | Control@2026     |
-| Approver      | approver@usjournal.test       | Approve@2026     |
-| Accountant    | accountant@usjournal.test     | Accounts@2026    |
-| Auditor       | auditor@usjournal.test        | Audit@2026       |
-| Viewer        | viewer@usjournal.test         | View@2026        |
+1. **Organization** — enter your company name, legal name (optional), tax ID (optional)
+2. **Administrator** — create the first admin user (email + 8+ character password)
+3. **Done** — the app redirects to the login screen
 
-**Change these passwords in production** via the Users & Roles screen.
+**No demo data is seeded.** This is a real ERP — you start with a clean slate and configure your chart of accounts, vendors, customers, etc. manually after logging in as the administrator.
+
+### For developers only
+
+If you want to populate a test database with sample data (6 demo users, 66 accounts, 7 vendors, 6 customers, 20 sample journals), run:
+
+```bash
+bun run db:push
+bun run seed
+```
+
+⚠️ **This is for development only.** The `scripts/seed.ts` script is NOT used by the production desktop app. The production app only uses the First-run Setup Wizard, which creates a clean ERP with just the organization + admin user.
 
 ---
 

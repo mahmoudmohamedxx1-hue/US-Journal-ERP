@@ -136,7 +136,7 @@ export function DashboardView() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-medium uppercase tracking-wide">Dashboard</span>
           <span>·</span>
-          <span>FY 2026 · As of {formatDate(new Date())}</span>
+          <span>As of {formatDate(new Date())}</span>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {user.name.split(' ')[0]}</h1>
         <p className="text-sm text-muted-foreground">
@@ -145,10 +145,10 @@ export function DashboardView() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Cash Balance" value={formatMoney(k.cashBalance)} hint="across 4 accounts" icon={<Wallet className="h-4 w-4" />} variant="accent" />
-        <KpiCard label="YTD Revenue" value={formatMoney(k.ytdRevenue)} hint="posted activity" trend="up" trendValue="12.4%" icon={<TrendingUp className="h-4 w-4" />} variant="success" />
-        <KpiCard label="YTD Expenses" value={formatMoney(k.ytdExpenses)} hint="posted activity" trend="down" trendValue="3.1%" icon={<TrendingDown className="h-4 w-4" />} />
-        <KpiCard label="Net Income" value={formatMoney(k.netIncome)} hint={k.netIncome >= 0 ? 'profit YTD' : 'loss YTD'} trend={k.netIncome >= 0 ? 'up' : 'down'} trendValue={`${((k.netIncome / Math.max(k.ytdRevenue, 1)) * 100).toFixed(1)}% margin`} icon={<Receipt className="h-4 w-4" />} variant={k.netIncome >= 0 ? 'success' : 'danger'} />
+        <KpiCard label="Cash Balance" value={formatMoney(k.cashBalance)} hint={k.cashBalance > 0 ? 'across bank accounts' : 'no bank accounts yet'} icon={<Wallet className="h-4 w-4" />} variant="accent" />
+        <KpiCard label="YTD Revenue" value={formatMoney(k.ytdRevenue)} hint={k.ytdRevenue > 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingUp className="h-4 w-4" />} variant={k.ytdRevenue > 0 ? 'success' : 'default'} />
+        <KpiCard label="YTD Expenses" value={formatMoney(k.ytdExpenses)} hint={k.ytdExpenses > 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingDown className="h-4 w-4" />} />
+        <KpiCard label="Net Income" value={formatMoney(k.netIncome)} hint={k.ytdRevenue === 0 && k.ytdExpenses === 0 ? 'no activity yet' : (k.netIncome >= 0 ? 'profit YTD' : 'loss YTD')} icon={<Receipt className="h-4 w-4" />} variant={k.netIncome >= 0 ? 'success' : 'danger'} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -265,7 +265,7 @@ export function DashboardView() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Fiscal Period Status</CardTitle>
-              <CardDescription>FY 2026</CardDescription>
+              <CardDescription>Current fiscal year</CardDescription>
             </CardHeader>
             <CardContent className="space-y-1.5 max-h-[180px] overflow-y-auto">
               {data.fiscalPeriods.map((p) => (
