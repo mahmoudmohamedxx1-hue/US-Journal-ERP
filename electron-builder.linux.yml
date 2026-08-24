@@ -3,6 +3,7 @@
 
 npmRebuild: false
 nodeGypRebuild: false
+publish: null
 
 linux:
   target:
