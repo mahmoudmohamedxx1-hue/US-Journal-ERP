@@ -25,6 +25,10 @@ import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
 import { AuditLogView } from '@/components/erp/views/audit-log'
+import { FixedAssetsView } from '@/components/erp/views/fixed-assets'
+import { TimesheetsView } from '@/components/erp/views/timesheets'
+import { PeriodCloseView } from '@/components/erp/views/period-close'
+import { CashFlowForecastView } from '@/components/erp/views/cash-flow-forecast'
 import { JournalImportView } from '@/components/erp/views/journal-import'
 
 interface AppUser {
@@ -135,6 +139,10 @@ export default function Home() {
         {view === 'settings-users' && <UsersView />}
         {view === 'settings-org' && <OrganizationView />}
         {view === 'settings-periods' && <FiscalPeriodsView />}
+        {view === 'fixed-assets' && <FixedAssetsView />}
+        {view === 'timesheets' && <TimesheetsView />}
+        {view === 'period-close' && <PeriodCloseView />}
+        {view === 'cash-flow-forecast' && <CashFlowForecastView />}
         {view === 'audit-log' && <AuditLogView />}
       </AppShell>
     </AuthContext.Provider>

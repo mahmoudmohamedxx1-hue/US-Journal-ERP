@@ -49,6 +49,10 @@ model Organization {
   documents      Document[]
   customFields   CustomField[]
   payments      Payment[]
+  fixedAssets   FixedAsset[]
+  timesheets    Timesheet[]
+  approvalSteps ApprovalStep[]
+  notifications Notification[]
 }
 
 model User {
@@ -122,6 +126,7 @@ model Account {
   children     Account[]       @relation("AccountHierarchy")
   journalLines JournalLine[]
   budgets      Budget[]
+  fixedAssets  FixedAsset[]
 
   @@unique([organizationId, code])
 }
@@ -434,6 +439,7 @@ model Project {
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
+  timesheets   Timesheet[]
 }
 
 // ============================
@@ -796,4 +802,103 @@ model CustomFieldValue {
   customField CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
 
   @@unique([customFieldId, entityId])
+}
+
+// ============================
+// Fixed Assets + Depreciation (T3.22)
+// ============================
+
+model FixedAsset {
+  id              String   @id @default(cuid())
+  organizationId String
+  assetNumber     String
+  name            String
+  description     String?
+  accountId       String   // links to Fixed Asset account in chart
+  purchaseDate    DateTime
+  purchaseCost    Int      // in cents
+  salvageValue    Int      @default(0) // in cents
+  usefulLifeMonths Int     // e.g. 60 for 5 years
+  depreciationMethod String @default("straight-line") // straight-line, declining-balance
+  currentBookValue Int    // in cents, = purchaseCost - accumulatedDepreciation
+  accumulatedDepreciation Int @default(0) // in cents
+  status          String   @default("Active") // Active, Disposed, Fully Depreciated
+  createdAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  account      Account      @relation(fields: [accountId], references: [id])
+  depreciationRecords DepreciationRecord[]
+
+  @@unique([organizationId, assetNumber])
+}
+
+model DepreciationRecord {
+  id              String   @id @default(cuid())
+  fixedAssetId    String
+  period          String   // e.g. "2026-08"
+  depreciationAmount Int   // in cents
+  bookValueAfter  Int      // in cents
+  journalId       String?  // links to posted journal if auto-created
+  createdAt       DateTime @default(now())
+
+  fixedAsset FixedAsset @relation(fields: [fixedAssetId], references: [id], onDelete: Cascade)
+}
+
+// ============================
+// Timesheets (T3.24)
+// ============================
+
+model Timesheet {
+  id              String   @id @default(cuid())
+  organizationId String
+  employeeName    String
+  projectId       String?
+  date            DateTime
+  hours           Int      // stored as basis points (100 = 1 hour)
+  description     String?
+  billableRate    Int      @default(0) // in cents per hour
+  status          String   @default("Draft") // Draft, Submitted, Approved, Billed
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id])
+}
+
+// ============================
+// Multi-step Approval Workflow (T2.10)
+// ============================
+
+model ApprovalStep {
+  id              String   @id @default(cuid())
+  organizationId String
+  entityType      String   // Journal, PurchaseOrder, SalesOrder, etc.
+  stepNumber      Int
+  approverRole    String   // Manager, Administrator, Controller
+  description     String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, entityType, stepNumber])
+}
+
+// ============================
+// Notifications (T2.11)
+// ============================
+
+model Notification {
+  id              String   @id @default(cuid())
+  organizationId String
+  userId          String?
+  title           String
+  message         String
+  type            String   @default("info") // info, warning, success, error
+  read            Boolean  @default(false)
+  entityType      String?
+  entityId        String?
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
 }

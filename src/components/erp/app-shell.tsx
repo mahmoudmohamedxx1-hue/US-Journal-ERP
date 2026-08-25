@@ -30,6 +30,10 @@ import {
   Upload,
   CreditCard,
   DollarSign,
+  Building2 as BuildingIcon,
+  Clock,
+  FileCheck,
+  TrendingUp as TrendingIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -100,6 +104,15 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'recurring-journals', label: 'Recurring Journals', icon: Repeat },
       { id: 'budgets', label: 'Budgets', icon: Target },
       { id: 'exchange-rates', label: 'Exchange Rates', icon: DollarSign },
+      { id: 'cash-flow-forecast', label: 'Cash Flow Forecast', icon: TrendingIcon },
+      { id: 'period-close', label: 'Period Close', icon: FileCheck },
+    ],
+  },
+  {
+    label: 'Assets & Projects',
+    items: [
+      { id: 'fixed-assets', label: 'Fixed Assets', icon: BuildingIcon },
+      { id: 'timesheets', label: 'Timesheets', icon: Clock },
     ],
   },
   {

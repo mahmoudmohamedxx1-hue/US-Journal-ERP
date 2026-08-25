@@ -26,6 +26,10 @@ export type ErpView =
   | 'settings-org'
   | 'settings-periods'
   | 'journal-import'
+  | 'fixed-assets'
+  | 'timesheets'
+  | 'period-close'
+  | 'cash-flow-forecast'
   | 'audit-log'
 
 interface AppState {
