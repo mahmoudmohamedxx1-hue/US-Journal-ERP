@@ -32,6 +32,7 @@ export type ErpView =
   | 'cash-flow-forecast'
   | 'reconciliation'
   | 'custom-report'
+  | 'fx-revaluation'
   | 'audit-log'
 
 interface AppState {

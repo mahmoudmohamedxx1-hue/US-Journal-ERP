@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  erp:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - erp-data:/app/db
+      - erp-uploads:/app/upload
+    environment:
+      - DATABASE_URL=file:/app/db/custom.db
+      - NODE_ENV=production
+    restart: unless-stopped
+
+volumes:
+  erp-data:
+  erp-uploads:
