@@ -53,6 +53,13 @@ model Organization {
   timesheets    Timesheet[]
   approvalSteps ApprovalStep[]
   notifications Notification[]
+  subsidiaries  Subsidiary[]
+  intercompanyTxns IntercompanyTxn[]
+  employees     Employee[]
+  payslips      Payslip[]
+  boms          BOM[]
+  productionOrders ProductionOrder[]
+  ocrScans      OcrScan[]
 }
 
 model User {
@@ -182,6 +189,7 @@ model Journal {
   exchangeRate    Int    @default(100) // stored in basis points (100 = 1.0x)
   status          String   @default("Draft") // Draft, Submitted, Under Review, Approved, Rejected, Posted, Reversed
   reversalOfId    String?
+  eliminationSubsidiaryId String?
   totalDebit      Int    @default(0)
   totalCredit     Int    @default(0)
   createdById     String
@@ -201,6 +209,7 @@ model Journal {
   approvals    JournalApproval[]
   attachments  JournalAttachment[]
   reversalOf   Journal?       @relation("JournalReversal", fields: [reversalOfId], references: [id])
+  eliminationSubsidiary Subsidiary? @relation("EliminationJournals", fields: [eliminationSubsidiaryId], references: [id])
   reversedBy   Journal[]      @relation("JournalReversal")
   createdBy    User            @relation("JournalCreatedBy", fields: [createdById], references: [id])
   submittedBy  User?           @relation("JournalSubmittedBy", fields: [submittedById], references: [id])
@@ -415,6 +424,7 @@ model Department {
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
+  employees   Employee[]
 }
 
 model Location {
@@ -489,6 +499,9 @@ model Product {
   soLines        SalesOrderLine[]
   invoiceLines  InvoiceLine[]
   billLines     BillLine[]
+  boms          BOM[]
+  bomLines      BOMLine[]
+  productionOrders ProductionOrder[]
 
   @@unique([organizationId, sku])
 }
@@ -900,6 +913,166 @@ model Notification {
   read            Boolean  @default(false)
   entityType      String?
   entityId        String?
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ============================
+// Multi-Company Consolidation
+// ============================
+
+model Subsidiary {
+  id             String   @id @default(cuid())
+  organizationId String   // parent org
+  name           String
+  legalName      String?
+  taxId          String?
+  currency       String   @default("EGP")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+  intercompanyFrom  IntercompanyTxn[] @relation("ICTFrom")
+  intercompanyTo    IntercompanyTxn[] @relation("ICTTo")
+  eliminationJournals Journal[]     @relation("EliminationJournals")
+}
+
+model IntercompanyTxn {
+  id              String   @id @default(cuid())
+  organizationId  String
+  fromSubsidiaryId String
+  toSubsidiaryId  String
+  txnNumber       String   @unique
+  txnDate         DateTime
+  amount          Int      // in cents
+  currency        String   @default("EGP")
+  description     String?
+  status          String   @default("Draft") // Draft, Posted, Eliminated
+  createdAt       DateTime @default(now())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  fromSubsidiary  Subsidiary   @relation("ICTFrom", fields: [fromSubsidiaryId], references: [id])
+  toSubsidiary    Subsidiary   @relation("ICTTo", fields: [toSubsidiaryId], references: [id])
+}
+
+// ============================
+// Payroll
+// ============================
+
+model Employee {
+  id              String   @id @default(cuid())
+  organizationId  String
+  employeeNumber  String
+  name            String
+  email           String?
+  phone           String?
+  position        String?
+  departmentId    String?
+  hireDate        DateTime
+  basicSalary     Int      // monthly, in cents
+  allowances      Int      @default(0) // in cents
+  deductions      Int      @default(0) // in cents
+  socialInsurance Int      @default(0) // in cents
+  taxRate         Int      @default(0) // basis points (e.g. 1500 = 15%)
+  status          String   @default("Active") // Active, Terminated, On Leave
+  bankAccount     String?
+  createdAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  department   Department?   @relation(fields: [departmentId], references: [id])
+  payslips     Payslip[]
+}
+
+model Payslip {
+  id              String   @id @default(cuid())
+  organizationId  String
+  employeeId      String
+  payPeriod       String   // e.g. "2026-08"
+  payDate         DateTime
+  basicSalary     Int      // in cents
+  allowances      Int      @default(0)
+  overtime        Int      @default(0)
+  deductions      Int      @default(0)
+  socialInsurance Int      @default(0)
+  taxAmount       Int      @default(0)
+  netPay          Int      // in cents
+  status          String   @default("Draft") // Draft, Posted, Paid
+  journalId       String?  // linked payroll journal
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+}
+
+// ============================
+// Manufacturing / MRP
+// ============================
+
+model BOM {
+  id              String   @id @default(cuid())
+  organizationId  String
+  bomNumber       String
+  productId       String   // finished product
+  name            String
+  description     String?
+  quantity        Int      @default(1) // output quantity
+  status          String   @default("Active") // Active, Inactive
+  createdAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  product      Product       @relation(fields: [productId], references: [id])
+  lines        BOMLine[]
+  productionOrders ProductionOrder[]
+}
+
+model BOMLine {
+  id           String   @id @default(cuid())
+  bomId        String
+  productId    String   // component material
+  quantity     Int      // quantity needed per BOM output
+  unitCost     Int      @default(0) // in cents
+  sortOrder    Int      @default(0)
+
+  bom      BOM     @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+}
+
+model ProductionOrder {
+  id              String   @id @default(cuid())
+  organizationId  String
+  productionNumber String  @unique
+  bomId           String
+  productId       String   // finished product
+  quantity         Int       // how many to produce
+  startDate        DateTime
+  endDate          DateTime?
+  status           String   @default("Planned") // Planned, In Progress, Completed, Cancelled
+  totalCost        Int      @default(0) // in cents
+  journalId        String?  // linked journal when completed
+  createdAt        DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bom         BOM          @relation(fields: [bomId], references: [id])
+  product     Product       @relation(fields: [productId], references: [id])
+}
+
+// ============================
+// OCR Document Capture
+// ============================
+
+model OcrScan {
+  id              String   @id @default(cuid())
+  organizationId  String
+  fileName        String
+  mimeType        String
+  fileData        String   // base64
+  extractedData   String?  // JSON: { vendor, amount, date, invoiceNumber, lineItems }
+  status          String   @default("Pending") // Pending, Processed, Failed
+  entityType      String?  // Invoice, Bill
+  entityId        String?  // created invoice/bill ID
   createdAt       DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])

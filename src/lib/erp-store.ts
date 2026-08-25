@@ -33,6 +33,10 @@ export type ErpView =
   | 'reconciliation'
   | 'custom-report'
   | 'fx-revaluation'
+  | 'consolidation'
+  | 'payroll'
+  | 'manufacturing'
+  | 'ocr-scan'
   | 'audit-log'
 
 interface AppState {

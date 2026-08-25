@@ -25,6 +25,10 @@ import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
 import { AuditLogView } from '@/components/erp/views/audit-log'
+import { ConsolidationView } from '@/components/erp/views/consolidation'
+import { PayrollView } from '@/components/erp/views/payroll'
+import { ManufacturingView } from '@/components/erp/views/manufacturing'
+import { OcrScanView } from '@/components/erp/views/ocr-scan'
 import { FixedAssetsView } from '@/components/erp/views/fixed-assets'
 import { TimesheetsView } from '@/components/erp/views/timesheets'
 import { PeriodCloseView } from '@/components/erp/views/period-close'
@@ -147,6 +151,10 @@ export default function Home() {
         {view === 'cash-flow-forecast' && <CashFlowForecastView />}
         {view === 'reconciliation' && <ReconciliationView />}
         {view === 'custom-report' && <CustomReportView />}
+        {view === 'consolidation' && <ConsolidationView />}
+        {view === 'payroll' && <PayrollView />}
+        {view === 'manufacturing' && <ManufacturingView />}
+        {view === 'ocr-scan' && <OcrScanView />}
         {view === 'audit-log' && <AuditLogView />}
       </AppShell>
     </AuthContext.Provider>

@@ -36,6 +36,10 @@ import {
   TrendingUp as TrendingIcon,
   FileBarChart,
   Scale,
+  Factory,
+  Users as UsersIcon,
+  ScanText,
+  Network,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -92,6 +96,8 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'banking', label: 'Cash & Banking', icon: Landmark },
       { id: 'payments', label: 'Payments', icon: CreditCard },
       { id: 'reconciliation', label: 'Reconciliation', icon: Scale },
+      { id: 'consolidation', label: 'Multi-Company', icon: Network },
+      { id: 'ocr-scan', label: 'OCR Capture', icon: ScanText },
     ],
   },
   {
@@ -117,6 +123,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'fixed-assets', label: 'Fixed Assets', icon: BuildingIcon },
       { id: 'timesheets', label: 'Timesheets', icon: Clock },
+      { id: 'payroll', label: 'Payroll', icon: UsersIcon },
+      { id: 'manufacturing', label: 'Manufacturing', icon: Factory },
     ],
   },
   {
