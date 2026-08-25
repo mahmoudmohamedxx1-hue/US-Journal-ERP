@@ -45,6 +45,10 @@ model Organization {
   reconciliations Reconciliation[]
   recurringJournals RecurringJournal[]
   budgets        Budget[]
+  exchangeRates ExchangeRate[]
+  documents      Document[]
+  customFields   CustomField[]
+  payments      Payment[]
 }
 
 model User {
@@ -281,11 +285,14 @@ model Bill {
   dueDate        DateTime
   amount         Int
   amountPaid     Int    @default(0)
+  currency       String   @default("EGP")
   status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
   description    String?
   createdAt      DateTime @default(now())
 
   vendor Vendor @relation(fields: [vendorId], references: [id])
+  lines  BillLine[]
+  allocations Allocation[]
 }
 
 model Customer {
@@ -321,11 +328,14 @@ model Invoice {
   dueDate        DateTime
   amount         Int
   amountPaid     Int    @default(0)
+  currency       String   @default("EGP")
   status         String   @default("Open") // Open, Partially Paid, Paid, Overdue
   description    String?
   createdAt      DateTime @default(now())
 
   customer Customer @relation(fields: [customerId], references: [id])
+  lines    InvoiceLine[]
+  allocations Allocation[]
 }
 
 // ============================
@@ -348,6 +358,7 @@ model BankAccount {
   organization Organization     @relation(fields: [organizationId], references: [id])
   transactions BankTransaction[]
   reconciliations Reconciliation[]
+  payments      Payment[]
 }
 
 model BankTransaction {
@@ -382,6 +393,8 @@ model TaxCode {
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
+  invoiceLines InvoiceLine[]
+  billLines    BillLine[]
 }
 
 // ============================
@@ -466,6 +479,8 @@ model Product {
   inventoryMoves InventoryMove[]
   poLines        PurchaseOrderLine[]
   soLines        SalesOrderLine[]
+  invoiceLines  InvoiceLine[]
+  billLines     BillLine[]
 
   @@unique([organizationId, sku])
 }
@@ -631,4 +646,154 @@ model Budget {
   account       Account      @relation(fields: [accountId], references: [id])
 
   @@unique([organizationId, accountId, period])
+}
+
+// ============================
+// Exchange Rates (T1.1)
+// ============================
+
+model ExchangeRate {
+  id             String   @id @default(cuid())
+  organizationId String
+  fromCurrency   String   // e.g. "USD"
+  toCurrency     String   // e.g. "EGP"
+  rate           Int      // stored as basis points (e.g. 4800 = 48.00 EGP per 1 USD)
+  date           DateTime // effective date for this rate
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, fromCurrency, toCurrency, date])
+}
+
+// ============================
+// Invoice/Bill Line Items (T1.2)
+// ============================
+
+model InvoiceLine {
+  id           String   @id @default(cuid())
+  invoiceId    String
+  lineNumber   Int
+  productId    String?
+  description  String
+  quantity     Int      // can be fractional (stored as basis points)
+  unitPrice    Int      // in cents
+  taxCodeId    String?
+  taxAmount    Int      @default(0) // in cents
+  totalPrice   Int      // in cents (quantity * unitPrice + taxAmount)
+  createdAt    DateTime @default(now())
+
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product   Product?  @relation(fields: [productId], references: [id])
+  taxCode   TaxCode?  @relation(fields: [taxCodeId], references: [id])
+}
+
+model BillLine {
+  id           String   @id @default(cuid())
+  billId       String
+  lineNumber   Int
+  productId    String?
+  description  String
+  quantity     Int
+  unitPrice    Int      // in cents
+  taxCodeId    String?
+  taxAmount    Int      @default(0)
+  totalPrice   Int
+  createdAt    DateTime @default(now())
+
+  bill      Bill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  product   Product?  @relation(fields: [productId], references: [id])
+  taxCode   TaxCode?  @relation(fields: [taxCodeId], references: [id])
+}
+
+// ============================
+// Payments + Allocations (T1.4)
+// ============================
+
+model Payment {
+  id             String   @id @default(cuid())
+  organizationId String
+  paymentNumber  String   @unique
+  paymentDate    DateTime
+  paymentType    String   // RECEIPT (from customer) or PAYMENT (to vendor)
+  partyType      String   // CUSTOMER or VENDOR
+  partyId        String   // customer.id or vendor.id
+  bankAccountId  String
+  amount         Int      // in cents
+  currency       String   @default("EGP")
+  exchangeRate   Int      @default(100) // basis points (100 = 1.0x)
+  reference      String?  // check number, transfer ref
+  notes          String?
+  status         String   @default("Posted") // Draft, Posted, Reversed
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bankAccount  BankAccount   @relation(fields: [bankAccountId], references: [id])
+  allocations  Allocation[]
+}
+
+model Allocation {
+  id           String   @id @default(cuid())
+  paymentId    String
+  invoiceId    String?
+  billId       String?
+  amount       Int      // in cents allocated to this invoice/bill
+  createdAt    DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+  bill    Bill?    @relation(fields: [billId], references: [id])
+}
+
+// ============================
+// Document Attachments (T2.12)
+// ============================
+
+model Document {
+  id             String   @id @default(cuid())
+  organizationId String
+  fileName       String
+  fileSize       Int
+  mimeType       String
+  fileData       String   // base64-encoded file content
+  entityType     String   // Journal, Invoice, Bill, Vendor, Customer, etc.
+  entityId       String?
+  uploadedAt     DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ============================
+// Custom Fields (T2.13)
+// ============================
+
+model CustomField {
+  id             String   @id @default(cuid())
+  organizationId String
+  entityType     String   // Account, Vendor, Customer, Product, etc.
+  fieldName      String
+  fieldType      String   @default("text") // text, number, date, select
+  fieldOptions   String?  // JSON array for select type
+  isRequired     Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  values        CustomFieldValue[]
+
+  @@unique([organizationId, entityType, fieldName])
+}
+
+model CustomFieldValue {
+  id             String   @id @default(cuid())
+  customFieldId  String
+  entityId       String
+  value          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  customField CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([customFieldId, entityId])
 }

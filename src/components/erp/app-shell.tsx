@@ -28,6 +28,8 @@ import {
   Repeat,
   Target,
   Upload,
+  CreditCard,
+  DollarSign,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -81,6 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'invoices', label: 'Invoices', icon: FileText },
       { id: 'bills', label: 'Bills', icon: Receipt },
       { id: 'banking', label: 'Cash & Banking', icon: Landmark },
+      { id: 'payments', label: 'Payments', icon: CreditCard },
     ],
   },
   {
@@ -96,6 +99,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'recurring-journals', label: 'Recurring Journals', icon: Repeat },
       { id: 'budgets', label: 'Budgets', icon: Target },
+      { id: 'exchange-rates', label: 'Exchange Rates', icon: DollarSign },
     ],
   },
   {

@@ -19,6 +19,8 @@ import { PurchaseOrdersView } from '@/components/erp/views/purchase-orders'
 import { SalesOrdersView } from '@/components/erp/views/sales-orders'
 import { RecurringJournalsView } from '@/components/erp/views/recurring-journals'
 import { BudgetsView } from '@/components/erp/views/budgets'
+import { PaymentsView } from '@/components/erp/views/payments'
+import { ExchangeRatesView } from '@/components/erp/views/exchange-rates'
 import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
@@ -128,6 +130,8 @@ export default function Home() {
         {view === 'sales-orders' && <SalesOrdersView />}
         {view === 'recurring-journals' && <RecurringJournalsView />}
         {view === 'budgets' && <BudgetsView />}
+        {view === 'payments' && <PaymentsView />}
+        {view === 'exchange-rates' && <ExchangeRatesView />}
         {view === 'settings-users' && <UsersView />}
         {view === 'settings-org' && <OrganizationView />}
         {view === 'settings-periods' && <FiscalPeriodsView />}

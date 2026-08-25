@@ -20,6 +20,8 @@ export type ErpView =
   | 'sales-orders'
   | 'recurring-journals'
   | 'budgets'
+  | 'payments'
+  | 'exchange-rates'
   | 'settings-users'
   | 'settings-org'
   | 'settings-periods'
