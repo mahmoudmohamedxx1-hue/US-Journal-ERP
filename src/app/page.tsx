@@ -14,6 +14,11 @@ import { CustomersView } from '@/components/erp/views/customers'
 import { BankingView } from '@/components/erp/views/banking'
 import { InvoicesView } from '@/components/erp/views/invoices'
 import { BillsView } from '@/components/erp/views/bills'
+import { InventoryView } from '@/components/erp/views/inventory'
+import { PurchaseOrdersView } from '@/components/erp/views/purchase-orders'
+import { SalesOrdersView } from '@/components/erp/views/sales-orders'
+import { RecurringJournalsView } from '@/components/erp/views/recurring-journals'
+import { BudgetsView } from '@/components/erp/views/budgets'
 import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
@@ -116,6 +121,11 @@ export default function Home() {
         {view === 'banking' && <BankingView />}
         {view === 'invoices' && <InvoicesView />}
         {view === 'bills' && <BillsView />}
+        {view === 'inventory' && <InventoryView />}
+        {view === 'purchase-orders' && <PurchaseOrdersView />}
+        {view === 'sales-orders' && <SalesOrdersView />}
+        {view === 'recurring-journals' && <RecurringJournalsView />}
+        {view === 'budgets' && <BudgetsView />}
         {view === 'settings-users' && <UsersView />}
         {view === 'settings-org' && <OrganizationView />}
         {view === 'settings-periods' && <FiscalPeriodsView />}

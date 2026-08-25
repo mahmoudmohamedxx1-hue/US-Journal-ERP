@@ -21,6 +21,12 @@ import {
   Bell,
   Search,
   CircleUser,
+  Menu,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Repeat,
+  Target,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -73,6 +79,21 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'invoices', label: 'Invoices', icon: FileText },
       { id: 'bills', label: 'Bills', icon: Receipt },
       { id: 'banking', label: 'Cash & Banking', icon: Landmark },
+    ],
+  },
+  {
+    label: 'Commerce',
+    items: [
+      { id: 'inventory', label: 'Inventory', icon: Package },
+      { id: 'purchase-orders', label: 'Purchase Orders', icon: ShoppingCart },
+      { id: 'sales-orders', label: 'Sales Orders', icon: TrendingUp },
+    ],
+  },
+  {
+    label: 'Planning',
+    items: [
+      { id: 'recurring-journals', label: 'Recurring Journals', icon: Repeat },
+      { id: 'budgets', label: 'Budgets', icon: Target },
     ],
   },
   {

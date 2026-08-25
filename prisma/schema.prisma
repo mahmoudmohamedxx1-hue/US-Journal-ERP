@@ -37,6 +37,14 @@ model Organization {
   locations    Location[]
   projects     Project[]
   auditLogs    AuditLog[]
+  products       Product[]
+  warehouses     Warehouse[]
+  inventoryMoves InventoryMove[]
+  purchaseOrders PurchaseOrder[]
+  salesOrders    SalesOrder[]
+  reconciliations Reconciliation[]
+  recurringJournals RecurringJournal[]
+  budgets        Budget[]
 }
 
 model User {
@@ -109,6 +117,7 @@ model Account {
   parent       Account?        @relation("AccountHierarchy", fields: [parentId], references: [id])
   children     Account[]       @relation("AccountHierarchy")
   journalLines JournalLine[]
+  budgets      Budget[]
 
   @@unique([organizationId, code])
 }
@@ -128,6 +137,7 @@ model FiscalYear {
 
   organization  Organization @relation(fields: [organizationId], references: [id])
   periods       FiscalPeriod[]
+  budgets       Budget[]
 }
 
 model FiscalPeriod {
@@ -259,6 +269,7 @@ model Vendor {
   organization Organization @relation(fields: [organizationId], references: [id])
   bills        Bill[]
   journalLines JournalLine[]
+  purchaseOrders PurchaseOrder[]
 }
 
 model Bill {
@@ -298,6 +309,7 @@ model Customer {
   organization Organization @relation(fields: [organizationId], references: [id])
   invoices     Invoice[]
   journalLines JournalLine[]
+  salesOrders  SalesOrder[]
 }
 
 model Invoice {
@@ -335,6 +347,7 @@ model BankAccount {
 
   organization Organization     @relation(fields: [organizationId], references: [id])
   transactions BankTransaction[]
+  reconciliations Reconciliation[]
 }
 
 model BankTransaction {
@@ -427,4 +440,195 @@ model AuditLog {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   user          User         @relation(fields: [userId], references: [id])
+}
+
+// ============================
+// Inventory Management (P4.1)
+// ============================
+
+model Product {
+  id             String   @id @default(cuid())
+  organizationId String
+  sku            String
+  name           String
+  description    String?
+  category       String?
+  unit           String   @default("each") // each, kg, liter, hour, etc.
+  costPrice      Int      @default(0) // in cents
+  salePrice      Int      @default(0) // in cents
+  stockQuantity  Int      @default(0)
+  reorderPoint   Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  inventoryMoves InventoryMove[]
+  poLines        PurchaseOrderLine[]
+  soLines        SalesOrderLine[]
+
+  @@unique([organizationId, sku])
+}
+
+model Warehouse {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  location       String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  inventoryMoves InventoryMove[]
+
+  @@unique([organizationId, code])
+}
+
+model InventoryMove {
+  id           String   @id @default(cuid())
+  organizationId String
+  productId    String
+  warehouseId  String?
+  quantity     Int // positive = in, negative = out
+  moveType     String // PURCHASE, SALE, ADJUSTMENT, TRANSFER, RETURN
+  reference     String? // PO number, SO number, etc.
+  notes         String?
+  createdAt    DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  product      Product      @relation(fields: [productId], references: [id])
+  warehouse    Warehouse?   @relation(fields: [warehouseId], references: [id])
+}
+
+// ============================
+// Purchase Orders (P4.2)
+// ============================
+
+model PurchaseOrder {
+  id             String   @id @default(cuid())
+  organizationId String
+  poNumber       String   @unique
+  orderDate      DateTime
+  expectedDate   DateTime?
+  vendorId       String
+  status         String   @default("Draft") // Draft, Submitted, Received, Cancelled
+  totalAmount    Int      @default(0) // in cents
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  vendor       Vendor           @relation(fields: [vendorId], references: [id])
+  lines        PurchaseOrderLine[]
+}
+
+model PurchaseOrderLine {
+  id              String @id @default(cuid())
+  purchaseOrderId String
+  productId       String?
+  description     String
+  quantity        Int
+  unitPrice       Int // in cents
+  totalPrice      Int // in cents
+  receivedQty     Int @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product       Product?       @relation(fields: [productId], references: [id])
+}
+
+// ============================
+// Sales Orders (P4.3)
+// ============================
+
+model SalesOrder {
+  id             String   @id @default(cuid())
+  organizationId String
+  soNumber       String   @unique
+  orderDate      DateTime
+  expectedDate   DateTime?
+  customerId     String
+  status         String   @default("Draft") // Draft, Confirmed, Shipped, Delivered, Cancelled
+  totalAmount    Int      @default(0) // in cents
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  customer     Customer        @relation(fields: [customerId], references: [id])
+  lines        SalesOrderLine[]
+}
+
+model SalesOrderLine {
+  id           String @id @default(cuid())
+  salesOrderId String
+  productId    String?
+  description  String
+  quantity     Int
+  unitPrice    Int // in cents
+  totalPrice   Int // in cents
+  shippedQty   Int @default(0)
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product    Product?   @relation(fields: [productId], references: [id])
+}
+
+// ============================
+// Bank Reconciliation (P4.4)
+// ============================
+
+model Reconciliation {
+  id             String   @id @default(cuid())
+  organizationId String
+  bankAccountId  String
+  statementDate  DateTime
+  startingBalance Int    // in cents
+  endingBalance   Int    // in cents
+  status          String @default("Open") // Open, Reconciled
+  createdAt       DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  bankAccount  BankAccount    @relation(fields: [bankAccountId], references: [id])
+}
+
+// ============================
+// Recurring Journals (P4.5)
+// ============================
+
+model RecurringJournal {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  frequency      String   // DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY
+  nextRunDate    DateTime
+  lastRunDate    DateTime?
+  template       String   // JSON: { lines: [{ accountId, debit, credit, description }] }
+  status         String   @default("Active") // Active, Paused, Stopped
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ============================
+// Budgets (P4.6)
+// ============================
+
+model Budget {
+  id             String   @id @default(cuid())
+  organizationId String
+  fiscalYearId   String?
+  accountId      String
+  period         String   // e.g. "2026-01" for January 2026, "2026" for full year
+  budgetAmount   Int      // in cents
+  actualAmount   Int      @default(0) // in cents, updated from posted journals
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  fiscalYear    FiscalYear?  @relation(fields: [fiscalYearId], references: [id])
+  account       Account      @relation(fields: [accountId], references: [id])
+
+  @@unique([organizationId, accountId, period])
 }
