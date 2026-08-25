@@ -29,6 +29,8 @@ import { FixedAssetsView } from '@/components/erp/views/fixed-assets'
 import { TimesheetsView } from '@/components/erp/views/timesheets'
 import { PeriodCloseView } from '@/components/erp/views/period-close'
 import { CashFlowForecastView } from '@/components/erp/views/cash-flow-forecast'
+import { ReconciliationView } from '@/components/erp/views/reconciliation'
+import { CustomReportView } from '@/components/erp/views/custom-report'
 import { JournalImportView } from '@/components/erp/views/journal-import'
 
 interface AppUser {
@@ -143,6 +145,8 @@ export default function Home() {
         {view === 'timesheets' && <TimesheetsView />}
         {view === 'period-close' && <PeriodCloseView />}
         {view === 'cash-flow-forecast' && <CashFlowForecastView />}
+        {view === 'reconciliation' && <ReconciliationView />}
+        {view === 'custom-report' && <CustomReportView />}
         {view === 'audit-log' && <AuditLogView />}
       </AppShell>
     </AuthContext.Provider>

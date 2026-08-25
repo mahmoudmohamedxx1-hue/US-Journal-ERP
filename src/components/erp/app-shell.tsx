@@ -34,6 +34,8 @@ import {
   Clock,
   FileCheck,
   TrendingUp as TrendingIcon,
+  FileBarChart,
+  Scale,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -77,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'journals', label: 'Journal Register', icon: FileText },
       { id: 'reports', label: 'Financial Reports', icon: ClipboardList },
       { id: 'journal-import', label: 'Import from Excel', icon: Upload },
+      { id: 'custom-report', label: 'Custom Report', icon: FileBarChart },
     ],
   },
   {
@@ -88,6 +91,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'bills', label: 'Bills', icon: Receipt },
       { id: 'banking', label: 'Cash & Banking', icon: Landmark },
       { id: 'payments', label: 'Payments', icon: CreditCard },
+      { id: 'reconciliation', label: 'Reconciliation', icon: Scale },
     ],
   },
   {
@@ -271,6 +275,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs font-bold" asChild>
+              <button
+                aria-label="Toggle language"
+                onClick={() => {
+                  const current = localStorage.getItem('usj-lang') || 'en'
+                  const next = current === 'en' ? 'ar' : 'en'
+                  localStorage.setItem('usj-lang', next)
+                  document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr'
+                  window.location.reload()
+                }}
+              >
+                {typeof window !== 'undefined' && localStorage.getItem('usj-lang') === 'ar' ? 'EN' : 'ع'}
+              </button>
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
               <button
                 aria-label="Toggle theme"

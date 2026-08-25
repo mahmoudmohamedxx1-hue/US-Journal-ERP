@@ -171,7 +171,8 @@ export function forbidden(requiredRole: string, userRole?: string) {
 
 /**
  * Audit log helper — uses the system context (auto-created org + admin).
- * No authentication required.
+ * Implements hash-chain immutability: each entry's hash = SHA256(prevHash + content).
+ * If any entry is tampered with, the chain breaks and detection is possible.
  */
 export async function logAudit(opts: {
   action: string
@@ -185,7 +186,16 @@ export async function logAudit(opts: {
     const ctx = await getSystemContext()
     const userId = opts.userId ?? ctx.userId
     const orgId = opts.organizationId ?? ctx.organizationId
-    await db.auditLog.create({
+
+    // Get the previous audit log entry's hash
+    const prevEntry = await db.auditLog.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: 'desc' },
+    })
+    const prevHash = prevEntry?.hash || null
+
+    // Create the entry
+    const entry = await db.auditLog.create({
       data: {
         organizationId: orgId,
         userId,
@@ -193,7 +203,19 @@ export async function logAudit(opts: {
         entityType: opts.entityType,
         entityId: opts.entityId,
         description: opts.description,
+        prevHash,
       },
+    })
+
+    // Compute hash: SHA256(id + action + entityType + description + prevHash)
+    const { createHash } = await import('crypto')
+    const content = `${entry.id}|${opts.action}|${opts.entityType}|${opts.description}|${prevHash || ''}`
+    const hash = createHash('sha256').update(content).digest('hex')
+
+    // Update the entry with its hash
+    await db.auditLog.update({
+      where: { id: entry.id },
+      data: { hash },
     })
   } catch {
     // Never fail the main op due to audit log failure

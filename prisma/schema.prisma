@@ -455,6 +455,8 @@ model AuditLog {
   entityId       String?
   description    String
   metadata       String?  // JSON
+  prevHash       String?  // hash-chain: SHA256 of previous audit log entry
+  hash           String?  // SHA256 of this entry's content (id+action+entityType+description+prevHash)
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])

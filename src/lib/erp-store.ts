@@ -30,6 +30,8 @@ export type ErpView =
   | 'timesheets'
   | 'period-close'
   | 'cash-flow-forecast'
+  | 'reconciliation'
+  | 'custom-report'
   | 'audit-log'
 
 interface AppState {
