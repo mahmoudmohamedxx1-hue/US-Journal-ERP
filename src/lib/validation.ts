@@ -17,7 +17,7 @@ export const passwordSchema = z.string().min(8, 'Password must be at least 8 cha
 export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)')
 
 /** Money amount in cents (Int, >= 0) */
-export const centsSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)
+export const centsSchema = z.number().int().min(0).max(999999999999) // max ~$10 billion in cents
 
 /** Journal line input — exactly one of debit/credit must be positive */
 export const journalLineSchema = z.object({
