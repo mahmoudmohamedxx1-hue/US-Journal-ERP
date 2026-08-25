@@ -134,17 +134,19 @@ export async function POST(req: NextRequest) {
   // The unique constraint on journalNumber will reject the second one,
   // and we retry with a new number.
   let journal: { id: string; journalNumber: string } | null = null
-  const maxRetries = 5
+  const maxRetries = 10
   let lastError: unknown = null
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       journal = await db.$transaction(async (tx) => {
-        // Generate journal number inside the transaction (with locking)
+        // Generate journal number — add attempt suffix on retries to avoid
+        // repeated collisions under concurrent load
         const count = await tx.journal.count({
           where: { organizationId: ctx.organizationId },
         })
-        const journalNumber = `JE-${jd.getFullYear()}-${String(count + 1).padStart(4, '0')}`
+        const suffix = attempt > 1 ? `-${attempt}` : ''
+        const journalNumber = `JE-${jd.getFullYear()}-${String(count + 1).padStart(4, '0')}${suffix}`
 
         // Create the journal header
         const j = await tx.journal.create({
