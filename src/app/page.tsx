@@ -12,6 +12,8 @@ import { ReportsView } from '@/components/erp/views/reports'
 import { VendorsView } from '@/components/erp/views/vendors'
 import { CustomersView } from '@/components/erp/views/customers'
 import { BankingView } from '@/components/erp/views/banking'
+import { InvoicesView } from '@/components/erp/views/invoices'
+import { BillsView } from '@/components/erp/views/bills'
 import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
@@ -112,6 +114,8 @@ export default function Home() {
         {view === 'vendors' && <VendorsView />}
         {view === 'customers' && <CustomersView />}
         {view === 'banking' && <BankingView />}
+        {view === 'invoices' && <InvoicesView />}
+        {view === 'bills' && <BillsView />}
         {view === 'settings-users' && <UsersView />}
         {view === 'settings-org' && <OrganizationView />}
         {view === 'settings-periods' && <FiscalPeriodsView />}

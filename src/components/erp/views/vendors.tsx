@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatMoney, formatDate } from '@/lib/format'
+import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +47,7 @@ export function VendorsView() {
   const [aging, setAging] = React.useState<Aging>({ current: 0, d30: 0, d60: 0, d90: 0, d90plus: 0 })
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState('')
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   React.useEffect(() => {
     fetch('/api/vendors?withBills=1')
@@ -83,11 +85,42 @@ export function VendorsView() {
             Track payables, vendor balances, and bill aging.
           </p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           New Vendor
         </Button>
       </div>
+
+      <CreateFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create New Vendor"
+        description="Add a vendor to your accounts payable."
+        apiEndpoint="/api/vendors"
+        successMessage="Vendor created successfully"
+        onSuccess={() => setTimeout(() => load(), 100)}
+        fields={[
+          { key: 'vendorNumber', label: 'Vendor Number', type: 'text', required: true, placeholder: 'V-001' },
+          { key: 'name', label: 'Vendor Name', type: 'text', required: true, placeholder: 'Acme Corporation' },
+          { key: 'contactName', label: 'Contact Name', type: 'text', placeholder: 'John Smith' },
+          { key: 'email', label: 'Email', type: 'email', placeholder: 'ap@vendor.com' },
+          { key: 'phone', label: 'Phone', type: 'text', placeholder: '+1 555-0100' },
+          { key: 'address', label: 'Address', type: 'text', placeholder: '123 Main St, City, ST 12345' },
+          { key: 'taxId', label: 'Tax ID', type: 'text', placeholder: 'EIN / VAT number' },
+          { key: 'paymentTerms', label: 'Payment Terms', type: 'select', options: [
+            { value: 'Net 15', label: 'Net 15' },
+            { value: 'Net 30', label: 'Net 30' },
+            { value: 'Net 45', label: 'Net 45' },
+            { value: 'Net 60', label: 'Net 60' },
+            { value: 'Due on receipt', label: 'Due on receipt' },
+          ], defaultValue: 'Net 30' },
+          { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'USD', label: 'USD — US Dollar' },
+            { value: 'EUR', label: 'EUR — Euro' },
+            { value: 'GBP', label: 'GBP — British Pound' },
+          ], defaultValue: 'USD' },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Total Payables" value={formatMoney(totalAP)} icon={<Receipt className="h-4 w-4" />} variant="danger" />

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Wallet, Lock, Unlock, Loader2, CheckCircle2 } from 'lucide-react'
+import { Wallet, Lock, Unlock, Loader2, CheckCircle2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/format'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
+import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 
 export function FiscalPeriodsView() {
   const [years, setYears] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [actionLoading, setActionLoading] = React.useState<Record<string, boolean>>({})
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   const load = React.useCallback(() => {
     setLoading(true)
@@ -52,10 +54,18 @@ export function FiscalPeriodsView() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-medium uppercase tracking-wide">Settings · Fiscal Periods</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Fiscal Periods</h1>
-        <p className="text-sm text-muted-foreground">
-          Open and close accounting periods. Closed periods reject new journal postings.
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Fiscal Periods</h1>
+            <p className="text-sm text-muted-foreground">
+              Open and close accounting periods. Closed periods reject new journal postings.
+            </p>
+          </div>
+          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Create Fiscal Year
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -126,6 +136,20 @@ export function FiscalPeriodsView() {
           </Card>
         ))
       )}
+      <CreateFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create Fiscal Year"
+        description="Create a new fiscal year with auto-generated monthly periods."
+        apiEndpoint="/api/fiscal-periods"
+        successMessage="Fiscal year created with 12 monthly periods"
+        onSuccess={() => setTimeout(() => load(), 100)}
+        fields={[
+          { key: 'name', label: 'Fiscal Year Name', type: 'text', required: true, placeholder: 'FY 2026', defaultValue: 'FY 2026' },
+          { key: 'startDate', label: 'Start Date', type: 'date', required: true, defaultValue: '2026-01-01' },
+          { key: 'endDate', label: 'End Date', type: 'date', required: true, defaultValue: '2026-12-31' },
+        ]}
+      />
     </div>
   )
 }

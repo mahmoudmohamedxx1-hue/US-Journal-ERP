@@ -13,6 +13,8 @@ export type ErpView =
   | 'vendors'
   | 'customers'
   | 'banking'
+  | 'invoices'
+  | 'bills'
   | 'settings-users'
   | 'settings-org'
   | 'settings-periods'

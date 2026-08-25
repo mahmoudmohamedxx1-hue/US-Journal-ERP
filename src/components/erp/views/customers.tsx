@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Users, Plus, Search, AlertTriangle, Clock } from 'lucide-react'
 import { formatMoney } from '@/lib/format'
+import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +38,7 @@ export function CustomersView() {
   const [aging, setAging] = React.useState<Aging>({ current: 0, d30: 0, d60: 0, d90: 0, d90plus: 0 })
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState('')
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   React.useEffect(() => {
     fetch('/api/customers?withInvoices=1')
@@ -73,11 +75,42 @@ export function CustomersView() {
             Track receivables, customer balances, and invoice aging.
           </p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           New Customer
         </Button>
       </div>
+
+      <CreateFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create New Customer"
+        description="Add a customer to your accounts receivable."
+        apiEndpoint="/api/customers"
+        successMessage="Customer created successfully"
+        onSuccess={() => setTimeout(() => load(), 100)}
+        fields={[
+          { key: 'customerNumber', label: 'Customer Number', type: 'text', required: true, placeholder: 'C-001' },
+          { key: 'name', label: 'Customer Name', type: 'text', required: true, placeholder: 'Northwind Traders' },
+          { key: 'contactName', label: 'Contact Name', type: 'text', placeholder: 'Eric Lin' },
+          { key: 'email', label: 'Email', type: 'email', placeholder: 'ap@customer.com' },
+          { key: 'phone', label: 'Phone', type: 'text', placeholder: '+1 555-0100' },
+          { key: 'address', label: 'Address', type: 'text', placeholder: '456 Oak Ave, City, ST 12345' },
+          { key: 'taxId', label: 'Tax ID', type: 'text', placeholder: 'EIN / VAT number' },
+          { key: 'paymentTerms', label: 'Payment Terms', type: 'select', options: [
+            { value: 'Net 15', label: 'Net 15' },
+            { value: 'Net 30', label: 'Net 30' },
+            { value: 'Net 45', label: 'Net 45' },
+            { value: 'Net 60', label: 'Net 60' },
+          ], defaultValue: 'Net 30' },
+          { key: 'creditLimit', label: 'Credit Limit (USD)', type: 'number', placeholder: '50000', helpText: 'Enter amount in dollars (e.g. 50000)' },
+          { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'USD', label: 'USD — US Dollar' },
+            { value: 'EUR', label: 'EUR — Euro' },
+            { value: 'GBP', label: 'GBP — British Pound' },
+          ], defaultValue: 'USD' },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Total Receivables" value={formatMoney(totalAR)} icon={<Users className="h-4 w-4" />} variant="success" />

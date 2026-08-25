@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useErpStore, type ErpView } from '@/lib/erp-store'
 import { useAuth } from '@/app/page'
+import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { OrgSwitcher } from '@/components/erp/org-switcher'
 
 interface NavItem {
@@ -69,6 +70,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'vendors', label: 'Vendors (AP)', icon: Receipt },
       { id: 'customers', label: 'Customers (AR)', icon: Users },
+      { id: 'invoices', label: 'Invoices', icon: FileText },
+      { id: 'bills', label: 'Bills', icon: Receipt },
       { id: 'banking', label: 'Cash & Banking', icon: Landmark },
     ],
   },
@@ -88,6 +91,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = React.useState(false)
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'ctrl+n': () => setView('journal-new'),
+    'ctrl+d': () => setView('dashboard'),
+    'ctrl+j': () => setView('journals'),
+    'ctrl+a': () => setView('accounts'),
+    'ctrl+r': () => setView('reports'),
+  })
 
   const handleNav = (v: ErpView) => {
     setView(v)

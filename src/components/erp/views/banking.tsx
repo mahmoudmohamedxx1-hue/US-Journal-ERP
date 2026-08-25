@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/erp/kpi-card'
+import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 
 export function BankingView() {
   const [accounts, setAccounts] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   React.useEffect(() => {
     fetch('/api/banking')
@@ -36,7 +38,7 @@ export function BankingView() {
             Bank account balances and recent transactions. Reconciliation status per transaction.
           </p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           Add Account
         </Button>
@@ -101,6 +103,29 @@ export function BankingView() {
           ))}
         </div>
       )}
+      <CreateFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create New Bank Account"
+        description="Add a bank or cash account to track balances and transactions."
+        apiEndpoint="/api/banking"
+        successMessage="Bank account created successfully"
+        onSuccess={() => setTimeout(() => load(), 100)}
+        fields={[
+          { key: 'accountName', label: 'Account Name', type: 'text', required: true, placeholder: 'Operating Checking' },
+          { key: 'bankName', label: 'Bank Name', type: 'text', placeholder: 'First National Bank' },
+          { key: 'accountNumber', label: 'Account Number', type: 'text', placeholder: '****4521' },
+          { key: 'accountType', label: 'Account Type', type: 'select', options: [
+            { value: 'Checking', label: 'Checking' },
+            { value: 'Savings', label: 'Savings' },
+            { value: 'Cash', label: 'Cash' },
+          ], defaultValue: 'Checking' },
+          { key: 'balance', label: 'Opening Balance (USD)', type: 'number', placeholder: '0.00', helpText: 'Enter amount in dollars (e.g. 50000)' },
+          { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'USD', label: 'USD — US Dollar' },
+          ], defaultValue: 'USD' },
+        ]}
+      />
     </div>
   )
 }

@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 import { Switch } from '@/components/ui/switch'
 
 interface AccountRow {
@@ -37,6 +38,7 @@ export function ChartOfAccountsView() {
   const [search, setSearch] = React.useState('')
   const [typeFilter, setTypeFilter] = React.useState<'All' | AccountType>('All')
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({})
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   const load = React.useCallback(() => {
     setLoading(true)
@@ -165,7 +167,7 @@ export function ChartOfAccountsView() {
             <Download className="mr-1.5 h-3.5 w-3.5" />
             Export
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New Account
           </Button>
@@ -292,6 +294,32 @@ export function ChartOfAccountsView() {
           )}
         </CardContent>
       </Card>
+      <CreateFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create New Account"
+        description="Add an account to your chart of accounts."
+        apiEndpoint="/api/accounts"
+        successMessage="Account created successfully"
+        onSuccess={() => setTimeout(() => load(), 100)}
+        fields={[
+          { key: 'code', label: 'Account Code', type: 'text', required: true, placeholder: '1000' },
+          { key: 'name', label: 'Account Name', type: 'text', required: true, placeholder: 'Cash' },
+          { key: 'accountType', label: 'Account Type', type: 'select', required: true, options: [
+            { value: 'Asset', label: 'Asset' },
+            { value: 'Liability', label: 'Liability' },
+            { value: 'Equity', label: 'Equity' },
+            { value: 'Revenue', label: 'Revenue' },
+            { value: 'Expense', label: 'Expense' },
+          ], defaultValue: 'Asset' },
+          { key: 'subType', label: 'Sub Type', type: 'text', placeholder: 'Current Asset', helpText: 'e.g. Current Asset, Fixed Asset, Current Liability' },
+          { key: 'normalBalance', label: 'Normal Balance', type: 'select', options: [
+            { value: 'Debit', label: 'Debit' },
+            { value: 'Credit', label: 'Credit' },
+          ], defaultValue: 'Debit' },
+          { key: 'description', label: 'Description', type: 'text', placeholder: 'Optional notes' },
+        ]}
+      />
     </div>
   )
 }
