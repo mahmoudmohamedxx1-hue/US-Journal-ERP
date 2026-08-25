@@ -23,6 +23,7 @@ export type ErpView =
   | 'settings-users'
   | 'settings-org'
   | 'settings-periods'
+  | 'journal-import'
   | 'audit-log'
 
 interface AppState {

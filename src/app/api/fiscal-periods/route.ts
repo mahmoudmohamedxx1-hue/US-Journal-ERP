@@ -79,3 +79,46 @@ export async function POST(req: NextRequest) {
     return err(e instanceof Error ? e.message : 'Failed to create fiscal year', 500, undefined, 'INTERNAL_ERROR')
   }
 }
+
+// PATCH /api/fiscal-periods — close or reopen a specific period
+// Only Manager + Administrator roles can close/reopen periods
+export async function PATCH(req: NextRequest) {
+  try {
+    const ctx = await getSystemContext()
+
+    // RBAC: only Manager + Administrator can close/reopen periods
+    if (ctx.userRole !== 'Manager' && ctx.userRole !== 'Administrator') {
+      return err('Forbidden — only Managers can close/reopen periods', 403, { userRole: ctx.userRole }, 'FORBIDDEN')
+    }
+
+    const body = await req.json().catch(() => ({}))
+    const { periodId, action } = body
+
+    if (!periodId || !['close', 'reopen'].includes(action)) {
+      return err('periodId and action (close|reopen) are required', 422, undefined, 'VALIDATION_ERROR')
+    }
+
+    const period = await db.fiscalPeriod.findFirst({ where: { id: periodId } })
+    if (!period) return err('Period not found', 404, undefined, 'NOT_FOUND')
+
+    const newStatus = action === 'close' ? 'Closed' : 'Open'
+    await db.fiscalPeriod.update({
+      where: { id: periodId },
+      data: {
+        status: newStatus,
+        closedAt: action === 'close' ? new Date() : null,
+      },
+    })
+
+    await logAudit({
+      action: action === 'close' ? 'CLOSE_PERIOD' : 'REOPEN_PERIOD',
+      entityType: 'FiscalPeriod',
+      entityId: periodId,
+      description: `${action === 'close' ? 'Closed' : 'Reopened'} fiscal period ${period.name}`,
+    })
+
+    return ok({ success: true, status: newStatus })
+  } catch (e) {
+    return err(e instanceof Error ? e.message : 'Failed to update period', 500, undefined, 'INTERNAL_ERROR')
+  }
+}

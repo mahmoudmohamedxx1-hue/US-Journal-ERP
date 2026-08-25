@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Repeat,
   Target,
+  Upload,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
@@ -69,6 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'accounts', label: 'Chart of Accounts', icon: BookOpen },
       { id: 'journals', label: 'Journal Register', icon: FileText },
       { id: 'reports', label: 'Financial Reports', icon: ClipboardList },
+      { id: 'journal-import', label: 'Import from Excel', icon: Upload },
     ],
   },
   {

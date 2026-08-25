@@ -23,6 +23,7 @@ import { UsersView } from '@/components/erp/views/users'
 import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
 import { AuditLogView } from '@/components/erp/views/audit-log'
+import { JournalImportView } from '@/components/erp/views/journal-import'
 
 interface AppUser {
   id: string
@@ -116,6 +117,7 @@ export default function Home() {
         {view === 'journal-new' && <JournalNewView />}
         {view === 'journal-detail' && <JournalDetailView />}
         {view === 'reports' && <ReportsView />}
+        {view === 'journal-import' && <JournalImportView />}
         {view === 'vendors' && <VendorsView />}
         {view === 'customers' && <CustomersView />}
         {view === 'banking' && <BankingView />}

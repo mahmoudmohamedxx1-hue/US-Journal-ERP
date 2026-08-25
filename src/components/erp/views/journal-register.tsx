@@ -163,8 +163,8 @@ export function JournalRegisterView() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            import('@/lib/csv-export').then(({ exportToCsv }) => {
-              exportToCsv(`journals-${new Date().toISOString().slice(0, 10)}.csv`, journals as unknown as Array<Record<string, unknown>>, [
+            import('@/lib/export-utils').then(({ exportToExcel, exportToPdf }) => {
+              exportToExcel(`journals-${Date.now()}`, journals as unknown as Array<Record<string, unknown>>, [
                 { key: 'journalNumber', label: 'Journal Number' },
                 { key: 'description', label: 'Description' },
                 { key: 'journalDate', label: 'Date' },
@@ -173,10 +173,17 @@ export function JournalRegisterView() {
                 { key: 'reference', label: 'Reference' },
                 { key: 'source', label: 'Source' },
               ])
+              exportToPdf(`journals-${Date.now()}`, 'Journal Register', journals as unknown as Array<Record<string, unknown>>, [
+                { key: 'journalNumber', label: 'Number' },
+                { key: 'description', label: 'Description' },
+                { key: 'journalDate', label: 'Date' },
+                { key: 'status', label: 'Status' },
+                { key: 'totalDebit', label: 'Amount' },
+              ], 'All journal entries')
             })
           }}>
             <Download className="mr-1.5 h-3.5 w-3.5" />
-            Export CSV
+            Export Excel + PDF
           </Button>
           <Button size="sm" onClick={() => setView('journal-new')}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
