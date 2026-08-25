@@ -1,19 +1,17 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/audit-log — most recent first, paginated
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const page = parseInt(url.searchParams.get('page') || '1')
   const pageSize = parseInt(url.searchParams.get('pageSize') || '50')
   const action = url.searchParams.get('action')
   const entityType = url.searchParams.get('entityType')
 
-  const where: Record<string, unknown> = { organizationId: user.organizationId }
+  const where: Record<string, unknown> = { organizationId: ctx.organizationId }
   if (action) where.action = action
   if (entityType) where.entityType = entityType
 

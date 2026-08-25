@@ -1,19 +1,17 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err, logAudit } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, logAudit, getSystemContext } from "@/lib/api"
 
 // POST /api/journals/[id]/reverse — create a reversal of a Posted journal
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const { id } = await params
 
   const original = await db.journal.findFirst({
-    where: { id, organizationId: user.organizationId },
+    where: { id, organizationId: ctx.organizationId },
     include: { lines: { include: { account: true } } },
   })
   if (!original) return err('Journal not found', 404)
@@ -25,7 +23,7 @@ export async function POST(
   }
 
   // Generate reversal number
-  const count = await db.journal.count({ where: { organizationId: user.organizationId } })
+  const count = await db.journal.count({ where: { organizationId: ctx.organizationId } })
   const reversalNumber = `JE-2026-${String(count + 1).padStart(4, '0')}`
 
   // Reverse debit/credit on every line
@@ -43,7 +41,7 @@ export async function POST(
   const reversal = await db.$transaction(async (tx) => {
     const rev = await tx.journal.create({
       data: {
-        organizationId: user.organizationId,
+        organizationId: ctx.organizationId,
         journalNumber: reversalNumber,
         journalDate: new Date(),
         fiscalPeriodId: original.fiscalPeriodId,
@@ -55,8 +53,8 @@ export async function POST(
         status: 'Posted', // posted immediately
         totalDebit,
         totalCredit,
-        createdById: user.id,
-        postedById: user.id,
+        createdById: ctx.userId,
+        postedById: ctx.userId,
         postedAt: new Date(),
         reversalOfId: original.id,
       },
@@ -83,7 +81,7 @@ export async function POST(
     })
 
     await tx.journalApproval.create({
-      data: { journalId: rev.id, action: 'Posted', byUserId: user.id },
+      data: { journalId: rev.id, action: 'Posted', byUserId: ctx.userId },
     })
 
     return rev

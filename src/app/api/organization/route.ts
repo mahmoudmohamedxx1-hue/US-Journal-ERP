@@ -1,11 +1,9 @@
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/organization
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
-  const org = await db.organization.findUniqueOrThrow({ where: { id: user.organizationId } })
+  const ctx = await getSystemContext()
+  const org = await db.organization.findUniqueOrThrow({ where: { id: ctx.organizationId } })
   return ok({ organization: org })
 }

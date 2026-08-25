@@ -1,12 +1,10 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/reports/balance-sheet — as-of reporting date
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const asOf = url.searchParams.get('asOf')
     ? new Date(url.searchParams.get('asOf')!)
@@ -14,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   const journals = await db.journal.findMany({
     where: {
-      organizationId: user.organizationId,
+      organizationId: ctx.organizationId,
       status: 'Posted',
       journalDate: { lte: asOf },
     },
@@ -33,7 +31,7 @@ export async function GET(req: NextRequest) {
   }
 
   const accounts = await db.account.findMany({
-    where: { organizationId: user.organizationId },
+    where: { organizationId: ctx.organizationId },
     orderBy: { code: 'asc' },
   })
 

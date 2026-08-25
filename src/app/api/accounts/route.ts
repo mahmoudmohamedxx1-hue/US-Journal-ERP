@@ -1,17 +1,15 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/accounts — list all accounts (optionally filtered by type / active)
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const type = url.searchParams.get('type')
   const activeOnly = url.searchParams.get('active') === '1'
 
-  const where: Record<string, unknown> = { organizationId: user.organizationId }
+  const where: Record<string, unknown> = { organizationId: ctx.organizationId }
   if (type) where.accountType = type
   if (activeOnly) where.active = true
 
@@ -26,8 +24,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/accounts — create new account
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const body = await req.json().catch(() => ({}))
   const { code, name, accountType, subType, parentId, normalBalance, taxBehavior, description } = body
 
@@ -36,13 +33,13 @@ export async function POST(req: NextRequest) {
   }
 
   const exists = await db.account.findFirst({
-    where: { organizationId: user.organizationId, code: String(code) },
+    where: { organizationId: ctx.organizationId, code: String(code) },
   })
   if (exists) return err(`Account code ${code} already exists`, 409)
 
   const acct = await db.account.create({
     data: {
-      organizationId: user.organizationId,
+      organizationId: ctx.organizationId,
       code: String(code),
       name: String(name),
       accountType: String(accountType),

@@ -3,8 +3,6 @@
 import * as React from 'react'
 import { AppShell } from '@/components/erp/app-shell'
 import { useErpStore } from '@/lib/erp-store'
-import { LoginView } from '@/components/erp/views/login'
-import { SetupWizard } from '@/components/erp/views/setup-wizard'
 import { DashboardView } from '@/components/erp/views/dashboard'
 import { ChartOfAccountsView } from '@/components/erp/views/chart-of-accounts'
 import { JournalRegisterView } from '@/components/erp/views/journal-register'
@@ -19,18 +17,16 @@ import { OrganizationView } from '@/components/erp/views/organization'
 import { FiscalPeriodsView } from '@/components/erp/views/fiscal-periods'
 import { AuditLogView } from '@/components/erp/views/audit-log'
 
-interface AuthUser {
+interface AppUser {
   id: string
   email: string
   name: string
   role: string
 }
 
-type AppPhase = 'bootstrapping' | 'needs-setup' | 'login' | 'authenticated'
-
 // Lightweight context so child components (AppShell) can read the current user.
 export const AuthContext = React.createContext<{
-  user: AuthUser
+  user: AppUser
   logout: () => Promise<void>
 } | null>(null)
 
@@ -42,69 +38,56 @@ export function useAuth() {
 
 export default function Home() {
   const view = useErpStore((s) => s.view)
-  const [phase, setPhase] = React.useState<AppPhase>('bootstrapping')
-  const [user, setUser] = React.useState<AuthUser | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [user, setUser] = React.useState<AppUser | null>(null)
 
-  // On mount: check if database needs setup, then check auth
+  // On mount: auto-create org + admin via getSystemContext(), then load the app.
+  // No login screen, no setup wizard — just open and start working.
   React.useEffect(() => {
     let cancelled = false
 
-    async function bootstrap() {
-      // Step 1: Check if setup is needed (DB empty?)
+    async function init() {
       try {
-        const setupRes = await fetch('/api/setup/status')
-        const setupData = await setupRes.json()
+        // Calling /api/organization triggers getSystemContext() which
+        // auto-creates the org + admin if they don't exist yet.
+        const res = await fetch('/api/organization')
         if (cancelled) return
-        if (setupData.needsSetup) {
-          setPhase('needs-setup')
-          return
-        }
-      } catch {
-        // If setup/status fails, fall through to auth check
-      }
-
-      // Step 2: Check if already authenticated
-      try {
-        const meRes = await fetch('/api/auth/me')
-        if (cancelled) return
-        if (meRes.ok) {
-          const meData = await meRes.json()
-          if (meData?.user) {
-            setUser(meData.user)
-            setPhase('authenticated')
-            return
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.organization) {
+            // Also fetch the user info
+            const usersRes = await fetch('/api/users')
+            if (usersRes.ok) {
+              const usersData = await usersRes.json()
+              if (usersData?.users?.[0]) {
+                const u = usersData.users[0]
+                setUser({
+                  id: u.id,
+                  email: u.email,
+                  name: u.name,
+                  role: u.role,
+                })
+              }
+            }
           }
         }
       } catch {
-        // ignore
+        // ignore — will retry on next render
       }
-      if (cancelled) return
-      setPhase('login')
+      if (!cancelled) setLoading(false)
     }
 
-    bootstrap()
+    init()
     return () => { cancelled = true }
   }, [])
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    setUser(null)
-    useErpStore.getState().setView('dashboard')
-    setPhase('login')
+    // No-op in no-auth mode — just reload the page
+    window.location.reload()
   }
 
-  const handleSetupComplete = () => {
-    setPhase('login')
-  }
-
-  const handleLoginSuccess = (u: AuthUser) => {
-    setUser(u)
-    setPhase('authenticated')
-  }
-
-  // --- Render based on phase ---
-
-  if (phase === 'bootstrapping') {
+  // Loading screen while auto-creating org + admin
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -115,14 +98,6 @@ export default function Home() {
         </div>
       </div>
     )
-  }
-
-  if (phase === 'needs-setup') {
-    return <SetupWizard onComplete={handleSetupComplete} />
-  }
-
-  if (phase === 'login' || !user) {
-    return <LoginView onSuccess={handleLoginSuccess} onResetDatabase={() => setPhase('needs-setup')} />
   }
 
   return (

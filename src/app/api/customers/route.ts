@@ -1,17 +1,15 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/customers
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const includeInvoices = url.searchParams.get('withInvoices') === '1'
   const activeOnly = url.searchParams.get('active') !== '0'
 
-  const where: Record<string, unknown> = { organizationId: user.organizationId }
+  const where: Record<string, unknown> = { organizationId: ctx.organizationId }
   if (activeOnly) where.active = true
 
   const customers = await db.customer.findMany({

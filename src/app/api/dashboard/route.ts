@@ -1,12 +1,10 @@
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/dashboard — KPI tiles + recent activity + monthly trend
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
-  const org = await db.organization.findUniqueOrThrow({ where: { id: user.organizationId } })
+  const ctx = await getSystemContext()
+  const org = await db.organization.findUniqueOrThrow({ where: { id: ctx.organizationId } })
 
   const [
     postedJournals,
@@ -18,23 +16,23 @@ export async function GET() {
     openBills,
   ] = await Promise.all([
     db.journal.findMany({
-      where: { organizationId: user.organizationId, status: 'Posted' },
+      where: { organizationId: ctx.organizationId, status: 'Posted' },
       include: { lines: { include: { account: true } } },
     }),
     db.journal.findMany({
-      where: { organizationId: user.organizationId },
+      where: { organizationId: ctx.organizationId },
       include: { createdBy: true, lines: true },
       orderBy: { createdAt: 'desc' },
       take: 8,
     }),
-    db.bankAccount.findMany({ where: { organizationId: user.organizationId } }),
-    db.vendor.findMany({ where: { organizationId: user.organizationId, active: true } }),
-    db.customer.findMany({ where: { organizationId: user.organizationId, active: true } }),
+    db.bankAccount.findMany({ where: { organizationId: ctx.organizationId } }),
+    db.vendor.findMany({ where: { organizationId: ctx.organizationId, active: true } }),
+    db.customer.findMany({ where: { organizationId: ctx.organizationId, active: true } }),
     db.invoice.findMany({
-      where: { organizationId: user.organizationId, status: { in: ['Open', 'Partially Paid', 'Overdue'] } },
+      where: { organizationId: ctx.organizationId, status: { in: ['Open', 'Partially Paid', 'Overdue'] } },
     }),
     db.bill.findMany({
-      where: { organizationId: user.organizationId, status: { in: ['Open', 'Partially Paid', 'Overdue'] } },
+      where: { organizationId: ctx.organizationId, status: { in: ['Open', 'Partially Paid', 'Overdue'] } },
     }),
   ])
 
@@ -79,7 +77,7 @@ export async function GET() {
   const unpostedByStatus: Record<string, number> = {}
   for (const s of unpostedStatuses) {
     unpostedByStatus[s] = await db.journal.count({
-      where: { organizationId: user.organizationId, status: s },
+      where: { organizationId: ctx.organizationId, status: s },
     })
   }
   const unpostedCount = unpostedStatuses.reduce(
@@ -98,7 +96,7 @@ export async function GET() {
 
   // Fiscal period status
   const periods = await db.fiscalPeriod.findMany({
-    where: { fiscalYear: { organizationId: user.organizationId } },
+    where: { fiscalYear: { organizationId: ctx.organizationId } },
     orderBy: { periodNumber: 'asc' },
     include: { fiscalYear: true },
   })

@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { ok, err } from '@/lib/api'
+import { ok, err, getSystemContext } from '@/lib/api'
 
 // GET /api/health
 // Returns database connectivity, environment, and basic system info.

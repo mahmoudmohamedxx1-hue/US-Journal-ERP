@@ -1,14 +1,12 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err, logAudit } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, logAudit, getSystemContext } from "@/lib/api"
 
 // GET /api/fiscal-periods
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const years = await db.fiscalYear.findMany({
-    where: { organizationId: user.organizationId },
+    where: { organizationId: ctx.organizationId },
     orderBy: { startDate: 'desc' },
     include: { periods: { orderBy: { periodNumber: 'asc' } } },
   })
@@ -17,8 +15,7 @@ export async function GET() {
 
 // PATCH /api/fiscal-periods — close or reopen a period
 export async function PATCH(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const body = await req.json().catch(() => ({}))
   const { periodId, action } = body
   if (!periodId || !['close', 'reopen'].includes(action)) {

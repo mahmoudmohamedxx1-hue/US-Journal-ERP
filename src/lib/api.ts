@@ -1,57 +1,104 @@
 /**
- * Shared API helpers — session-aware auth + structured JSON error responses.
+ * Shared API helpers — NO AUTH REQUIRED (current version).
  *
- * IMPORTANT: This is a REAL ERP. There is no demo org fallback.
- * Every API route requires authentication and resolves the org from
- * the authenticated session. The Setup Wizard is the only way to
- * create the organization and first admin user.
+ * The app auto-creates a default organization + admin user on first
+ * database access. All API routes use getSystemContext() to get the
+ * org/user context without requiring a session cookie.
+ *
+ * This simplifies the desktop app: no login screen, no setup wizard,
+ * just open the app and start working.
  */
 import { db } from './db'
-import { getCurrentUser, type AuthUser, type Role } from './auth'
+import bcrypt from 'bcryptjs'
+
+export interface SystemContext {
+  organizationId: string
+  userId: string
+  userName: string
+  userEmail: string
+  userRole: string
+}
+
+let cachedContext: SystemContext | null = null
 
 /**
- * Returns the currently-authenticated user, or null.
- * In a real ERP, every API route should call requireUser() or requireRole()
- * — there is no DEMO_ORG_ID fallback.
+ * Returns the system context (org + user) — auto-creates if missing.
+ * No authentication required.
+ *
+ * On first call: creates a default org "US Journal ERP" and admin user
+ * "admin@local" with a random password (since no one needs to log in).
+ * Subsequent calls return the cached context.
  */
-export async function getCurrentAuthUser(): Promise<AuthUser | null> {
-  return getCurrentUser()
+export async function getSystemContext(): Promise<SystemContext> {
+  if (cachedContext) return cachedContext
+
+  // Find or create the organization
+  let org = await db.organization.findFirst()
+  if (!org) {
+    org = await db.organization.create({
+      data: {
+        name: 'US Journal ERP',
+        legalName: 'US Journal ERP',
+        currency: 'USD',
+        baseCurrency: 'USD',
+      },
+    })
+    console.log(`[api] Auto-created organization: ${org.name}`)
+  }
+
+  // Find or create the admin user
+  let user = await db.user.findFirst({ where: { organizationId: org.id } })
+  if (!user) {
+    const passwordHash = await bcrypt.hash(
+      Math.random().toString(36).slice(2) + Date.now().toString(36),
+      10,
+    )
+    user = await db.user.create({
+      data: {
+        email: 'admin@local',
+        name: 'Administrator',
+        passwordHash,
+        role: 'Administrator',
+        organizationId: org.id,
+        active: true,
+      },
+    })
+    console.log(`[api] Auto-created admin user: ${user.email}`)
+  }
+
+  cachedContext = {
+    organizationId: org.id,
+    userId: user.id,
+    userName: user.name,
+    userEmail: user.email,
+    userRole: user.role,
+  }
+
+  return cachedContext
+}
+
+/**
+ * Returns the current user's organization ID — no auth required.
+ */
+export async function getCurrentOrgId(): Promise<string> {
+  const ctx = await getSystemContext()
+  return ctx.organizationId
+}
+
+/**
+ * Returns the current user's ID — no auth required.
+ */
+export async function getCurrentUserId(): Promise<string> {
+  const ctx = await getSystemContext()
+  return ctx.userId
 }
 
 /**
  * Returns the current user's organization.
- * Throws if not authenticated — callers should use requireUser() first.
  */
 export async function getCurrentOrg() {
-  const user = await getCurrentUser()
-  if (!user) {
-    throw new Error('Not authenticated — call requireUser() before getCurrentOrg()')
-  }
-  return db.organization.findUniqueOrThrow({ where: { id: user.organizationId } })
-}
-
-/**
- * Returns the current user's organization ID.
- * Throws if not authenticated.
- */
-export async function getCurrentOrgId(): Promise<string> {
-  const user = await getCurrentUser()
-  if (!user) {
-    throw new Error('Not authenticated — call requireUser() before getCurrentOrgId()')
-  }
-  return user.organizationId
-}
-
-/**
- * Returns the current user's ID.
- * Throws if not authenticated.
- */
-export async function getCurrentUserId(): Promise<string> {
-  const user = await getCurrentUser()
-  if (!user) {
-    throw new Error('Not authenticated — call requireUser() before getCurrentUserId()')
-  }
-  return user.id
+  const ctx = await getSystemContext()
+  return db.organization.findUniqueOrThrow({ where: { id: ctx.organizationId } })
 }
 
 export function formatMoney(amount: number, currency = 'USD'): string {
@@ -123,9 +170,8 @@ export function forbidden(requiredRole: string, userRole?: string) {
 }
 
 /**
- * Audit log helper — uses the session user when available.
- * If no session (e.g. setup endpoint), pass userId + organizationId
- * explicitly via opts.
+ * Audit log helper — uses the system context (auto-created org + admin).
+ * No authentication required.
  */
 export async function logAudit(opts: {
   action: string
@@ -136,17 +182,9 @@ export async function logAudit(opts: {
   organizationId?: string
 }) {
   try {
-    let userId = opts.userId
-    let orgId = opts.organizationId
-    if (!userId || !orgId) {
-      const user = await getCurrentUser()
-      userId = userId ?? user?.id ?? 'system'
-      orgId = orgId ?? user?.organizationId
-    }
-    if (!orgId) {
-      // No org context — skip audit log silently (e.g. during setup)
-      return
-    }
+    const ctx = await getSystemContext()
+    const userId = opts.userId ?? ctx.userId
+    const orgId = opts.organizationId ?? ctx.organizationId
     await db.auditLog.create({
       data: {
         organizationId: orgId,

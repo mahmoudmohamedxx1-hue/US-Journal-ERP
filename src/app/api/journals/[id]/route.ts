@@ -1,18 +1,16 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err, logAudit } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, logAudit, getSystemContext } from "@/lib/api"
 
 // GET /api/journals/[id] — fetch full journal detail with lines, approvals, audit history
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const { id } = await params
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: user.organizationId },
+    where: { id, organizationId: ctx.organizationId },
     include: {
       lines: {
         include: { account: true },
@@ -38,13 +36,12 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const { id } = await params
   const body = await req.json().catch(() => ({}))
 
   const existing = await db.journal.findFirst({
-    where: { id, organizationId: user.organizationId },
+    where: { id, organizationId: ctx.organizationId },
   })
   if (!existing) return err('Journal not found', 404)
   if (existing.status !== 'Draft') {
@@ -83,7 +80,7 @@ export async function PATCH(
   for (const l of normalizedLines) {
     if (!l.accountId && l.accountCode) {
       const acct = await db.account.findFirst({
-        where: { organizationId: user.organizationId, code: l.accountCode },
+        where: { organizationId: ctx.organizationId, code: l.accountCode },
       })
       if (!acct) return err(`Account code ${l.accountCode} not found`, 422)
       l.accountId = acct.id
@@ -153,11 +150,10 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const { id } = await params
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: user.organizationId },
+    where: { id, organizationId: ctx.organizationId },
   })
   if (!journal) return err('Journal not found', 404)
   if (journal.status !== 'Draft') {

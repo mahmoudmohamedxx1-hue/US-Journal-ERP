@@ -1,13 +1,11 @@
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/invoices
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const invoices = await db.invoice.findMany({
-    where: { organizationId: user.organizationId },
+    where: { organizationId: ctx.organizationId },
     include: { customer: true },
     orderBy: { dueDate: 'asc' },
   })

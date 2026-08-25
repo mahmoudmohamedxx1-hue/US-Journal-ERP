@@ -1,13 +1,11 @@
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/users
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const users = await db.user.findMany({
-    where: { organizationId: user.organizationId },
+    where: { organizationId: ctx.organizationId },
     orderBy: { name: 'asc' },
     select: {
       id: true,

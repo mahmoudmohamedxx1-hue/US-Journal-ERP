@@ -1,13 +1,11 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err, logAudit } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, logAudit, getSystemContext } from "@/lib/api"
 import { createJournalSchema, validate } from '@/lib/validation'
 
 // GET /api/journals — list with filters & pagination
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const status = url.searchParams.get('status')
   const source = url.searchParams.get('source')
@@ -17,7 +15,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(url.searchParams.get('page') || '1')
   const pageSize = parseInt(url.searchParams.get('pageSize') || '50')
 
-  const where: Record<string, unknown> = { organizationId: user.organizationId }
+  const where: Record<string, unknown> = { organizationId: ctx.organizationId }
   if (status) where.status = status
   if (source) where.source = source
   if (search) {
@@ -61,8 +59,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/journals — create new journal entry
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
 
   const body = await req.json().catch(() => ({}))
 
@@ -95,7 +92,7 @@ export async function POST(req: NextRequest) {
   for (const l of normalizedLines) {
     if (!l.accountId && l.accountCode) {
       const acct = await db.account.findFirst({
-        where: { organizationId: user.organizationId, code: l.accountCode },
+        where: { organizationId: ctx.organizationId, code: l.accountCode },
       })
       if (!acct) return err(`Account code ${l.accountCode} not found`, 422, undefined, 'VALIDATION_ERROR')
       l.accountId = acct.id
@@ -110,7 +107,7 @@ export async function POST(req: NextRequest) {
   // Find fiscal period for journalDate
   const jd = new Date(journalDate)
   const fy = await db.fiscalYear.findFirst({
-    where: { organizationId: user.organizationId, startDate: { lte: jd }, endDate: { gte: jd } },
+    where: { organizationId: ctx.organizationId, startDate: { lte: jd }, endDate: { gte: jd } },
   })
   let periodId: string | null = null
   if (fy) {
@@ -145,14 +142,14 @@ export async function POST(req: NextRequest) {
       journal = await db.$transaction(async (tx) => {
         // Generate journal number inside the transaction (with locking)
         const count = await tx.journal.count({
-          where: { organizationId: user.organizationId },
+          where: { organizationId: ctx.organizationId },
         })
         const journalNumber = `JE-${jd.getFullYear()}-${String(count + 1).padStart(4, '0')}`
 
         // Create the journal header
         const j = await tx.journal.create({
           data: {
-            organizationId: user.organizationId,
+            organizationId: ctx.organizationId,
             journalNumber,
             journalDate: jd,
             fiscalPeriodId: periodId,
@@ -164,8 +161,8 @@ export async function POST(req: NextRequest) {
             status,
             totalDebit,
             totalCredit,
-            createdById: user.id,
-            submittedById: submit ? user.id : null,
+            createdById: ctx.userId,
+            submittedById: submit ? ctx.userId : null,
             submittedAt: submit ? new Date() : null,
           },
         })
@@ -188,7 +185,7 @@ export async function POST(req: NextRequest) {
             data: {
               journalId: j.id,
               action: 'Submitted',
-              byUserId: user.id,
+              byUserId: ctx.userId,
               comment: 'Submitted for review.',
             },
           })

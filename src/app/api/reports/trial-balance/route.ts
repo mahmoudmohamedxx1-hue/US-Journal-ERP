@@ -1,13 +1,11 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/reports/trial-balance
 // Returns per-account: opening balance, period movement, ending balance (debit/credit columns)
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const asOf = url.searchParams.get('asOf')
     ? new Date(url.searchParams.get('asOf')!)
@@ -17,14 +15,14 @@ export async function GET(req: NextRequest) {
     : new Date('2026-01-01')
 
   const accounts = await db.account.findMany({
-    where: { organizationId: user.organizationId, subType: { not: 'Header' } },
+    where: { organizationId: ctx.organizationId, subType: { not: 'Header' } },
     orderBy: { code: 'asc' },
   })
 
   // Pull all posted journal lines in the period
   const journals = await db.journal.findMany({
     where: {
-      organizationId: user.organizationId,
+      organizationId: ctx.organizationId,
       status: 'Posted',
       journalDate: { lte: asOf },
     },

@@ -1,12 +1,10 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, getSystemContext } from "@/lib/api"
 
 // GET /api/reports/income-statement — for date range
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const url = new URL(req.url)
   const from = url.searchParams.get('from')
     ? new Date(url.searchParams.get('from')!)
@@ -17,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   const journals = await db.journal.findMany({
     where: {
-      organizationId: user.organizationId,
+      organizationId: ctx.organizationId,
       status: 'Posted',
       journalDate: { gte: from, lte: to },
     },
@@ -25,7 +23,7 @@ export async function GET(req: NextRequest) {
   })
 
   const accounts = await db.account.findMany({
-    where: { organizationId: user.organizationId },
+    where: { organizationId: ctx.organizationId },
     orderBy: { code: 'asc' },
   })
 

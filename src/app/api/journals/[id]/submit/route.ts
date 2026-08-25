@@ -1,18 +1,16 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, err, logAudit } from "@/lib/api"
-import { getCurrentUser } from "@/lib/auth"
+import { ok, err, logAudit, getSystemContext } from "@/lib/api"
 
 // POST /api/journals/[id]/submit — submit a Draft journal for approval
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser()
-  if (!user) return err("Unauthorized", 401, undefined, "UNAUTHORIZED")
+  const ctx = await getSystemContext()
   const { id } = await params
   const journal = await db.journal.findFirst({
-    where: { id, organizationId: user.organizationId },
+    where: { id, organizationId: ctx.organizationId },
     include: { lines: true, fiscalPeriod: true },
   })
   if (!journal) return err('Journal not found', 404)
@@ -41,12 +39,12 @@ export async function POST(
     where: { id },
     data: {
       status: 'Submitted',
-      submittedById: user.id,
+      submittedById: ctx.userId,
       submittedAt: new Date(),
     },
   })
   await db.journalApproval.create({
-    data: { journalId: id, action: 'Submitted', byUserId: user.id },
+    data: { journalId: id, action: 'Submitted', byUserId: ctx.userId },
   })
   await logAudit({
     action: 'SUBMIT_JOURNAL',
