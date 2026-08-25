@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok } from "@/lib/api"
+import { ok, err } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/reports/cash-flow — indirect method (Net Income → operating adjustments → investing → financing)

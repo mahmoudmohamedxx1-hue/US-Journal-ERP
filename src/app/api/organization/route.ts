@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { ok } from "@/lib/api"
+import { ok, err } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 // GET /api/organization
