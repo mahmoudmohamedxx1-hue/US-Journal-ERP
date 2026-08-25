@@ -10,6 +10,9 @@ import {
   EyeOff,
   Shield,
   ArrowRight,
+  AlertCircle,
+  RotateCcw,
+  Info,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -25,12 +28,14 @@ interface AuthUser {
   role: string
 }
 
-export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }) {
+export function LoginView({ onSuccess, onResetDatabase }: { onSuccess: (user: AuthUser) => void; onResetDatabase?: () => void }) {
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [showHelp, setShowHelp] = React.useState(false)
+  const [resetting, setResetting] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +61,22 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
       setError(e instanceof Error ? e.message : 'Login failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleReset = async () => {
+    setResetting(true)
+    try {
+      const res = await fetch('/api/setup/reset', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Reset failed')
+      }
+      toast.success('Database reset. The Setup Wizard will appear.')
+      setTimeout(() => onResetDatabase?.(), 1000)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Reset failed')
+      setResetting(false)
     }
   }
 
@@ -160,8 +181,58 @@ export function LoginView({ onSuccess }: { onSuccess: (user: AuthUser) => void }
               </div>
 
               {error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                  {error}
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <div>
+                    <div>{error}</div>
+                    {error === 'Invalid email or password' && (
+                      <button
+                        type="button"
+                        onClick={() => setShowHelp((s) => !s)}
+                        className="text-xs underline mt-1 hover:text-destructive/80"
+                      >
+                        {showHelp ? 'Hide help' : 'Need help signing in?'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Help section — shows when user can't sign in */}
+              {showHelp && error === 'Invalid email or password' && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 space-y-2">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <Info className="h-3.5 w-3.5" />
+                    Can&apos;t sign in?
+                  </div>
+                  <div className="space-y-1 text-amber-800">
+                    <p>• Check that you&apos;re using the email and password you entered during the First-run Setup Wizard.</p>
+                    <p>• Email is case-insensitive but must match exactly otherwise.</p>
+                    <p>• Password must be at least 8 characters.</p>
+                  </div>
+                  {onResetDatabase && (
+                    <div className="pt-2 border-t border-amber-200">
+                      <p className="text-amber-900 mb-1">If you&apos;ve forgotten your password, you can reset the database and run the setup wizard again:</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReset}
+                        disabled={resetting}
+                        className="border-amber-300 text-amber-900 hover:bg-amber-100"
+                      >
+                        {resetting ? (
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                        )}
+                        Reset database &amp; start over
+                      </Button>
+                      <p className="text-[10px] text-amber-700 mt-1">
+                        ⚠️ This deletes ALL data (organization, users, accounts, journals, etc.)
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -200,3 +271,4 @@ function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; 
     </div>
   )
 }
+

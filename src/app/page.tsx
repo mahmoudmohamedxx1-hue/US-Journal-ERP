@@ -122,7 +122,7 @@ export default function Home() {
   }
 
   if (phase === 'login' || !user) {
-    return <LoginView onSuccess={handleLoginSuccess} />
+    return <LoginView onSuccess={handleLoginSuccess} onResetDatabase={() => setPhase('needs-setup')} />
   }
 
   return (
