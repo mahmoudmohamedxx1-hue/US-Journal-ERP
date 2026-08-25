@@ -122,8 +122,13 @@ export function BankingView() {
           ], defaultValue: 'Checking' },
           { key: 'balance', label: 'Opening Balance (USD)', type: 'number', placeholder: '0.00', helpText: 'Enter amount in dollars (e.g. 50000)' },
           { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'EGP', label: 'EGP — Egyptian Pound' },
             { value: 'USD', label: 'USD — US Dollar' },
-          ], defaultValue: 'USD' },
+            { value: 'EUR', label: 'EUR — Euro' },
+            { value: 'SAR', label: 'SAR — Saudi Riyal' },
+            { value: 'AED', label: 'AED — UAE Dirham' },
+            { value: 'GBP', label: 'GBP — British Pound' },
+          ], defaultValue: 'EGP' },
         ]}
       />
     </div>

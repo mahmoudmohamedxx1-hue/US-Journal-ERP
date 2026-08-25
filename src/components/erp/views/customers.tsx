@@ -105,10 +105,13 @@ export function CustomersView() {
           ], defaultValue: 'Net 30' },
           { key: 'creditLimit', label: 'Credit Limit (USD)', type: 'number', placeholder: '50000', helpText: 'Enter amount in dollars (e.g. 50000)' },
           { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'EGP', label: 'EGP — Egyptian Pound' },
             { value: 'USD', label: 'USD — US Dollar' },
             { value: 'EUR', label: 'EUR — Euro' },
+            { value: 'SAR', label: 'SAR — Saudi Riyal' },
+            { value: 'AED', label: 'AED — UAE Dirham' },
             { value: 'GBP', label: 'GBP — British Pound' },
-          ], defaultValue: 'USD' },
+          ], defaultValue: 'EGP' },
         ]}
       />
 

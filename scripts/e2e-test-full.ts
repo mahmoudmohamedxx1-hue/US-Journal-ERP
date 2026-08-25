@@ -384,7 +384,7 @@ async function main() {
     const { data } = await api('/api/organization', { expectStatus: 200 })
     const d = data as { organization: { name: string; currency: string } }
     assert(!!d.organization.name, 'Should have name')
-    assertEqual(d.organization.currency, 'USD', 'Should be USD')
+    assertEqual(d.organization.currency, 'EGP', 'Should be USD')
     return `name="${d.organization.name}"`
   })
 

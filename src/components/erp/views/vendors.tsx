@@ -115,10 +115,13 @@ export function VendorsView() {
             { value: 'Due on receipt', label: 'Due on receipt' },
           ], defaultValue: 'Net 30' },
           { key: 'currency', label: 'Currency', type: 'select', options: [
+            { value: 'EGP', label: 'EGP — Egyptian Pound' },
             { value: 'USD', label: 'USD — US Dollar' },
             { value: 'EUR', label: 'EUR — Euro' },
+            { value: 'SAR', label: 'SAR — Saudi Riyal' },
+            { value: 'AED', label: 'AED — UAE Dirham' },
             { value: 'GBP', label: 'GBP — British Pound' },
-          ], defaultValue: 'USD' },
+          ], defaultValue: 'EGP' },
         ]}
       />
 

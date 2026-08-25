@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         address: address || null,
         taxId: taxId || null,
         paymentTerms: paymentTerms || null,
-        currency: currency || 'USD',
+        currency: currency || 'EGP',
         balance: 0,
         creditLimit: creditLimit ? Math.round(Number(creditLimit) * 100) : null,
         active: true,

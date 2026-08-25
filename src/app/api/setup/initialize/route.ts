@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
           name: organizationName,
           legalName: organizationName,
           taxId: null,
-          currency: 'USD',
-          baseCurrency: 'USD',
+          currency: 'EGP',
+          baseCurrency: 'EGP',
         },
       })
 

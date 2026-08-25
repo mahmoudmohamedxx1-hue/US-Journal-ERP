@@ -43,34 +43,67 @@ export const ROLES = [
   'Controller',
   'Administrator',
   'Auditor',
+  'Manager',
+  'Employee',
 ] as const
 
-export function formatMoney(amount: number, currency = 'USD'): string {
-  // Amounts are stored as Int (cents) — convert to dollars for display
-  const dollars = (amount || 0) / 100
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(dollars)
+// ============== Multi-Currency Support ==============
+
+export const SUPPORTED_CURRENCIES = [
+  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'ar-EG' },
+  { code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' },
+  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'de-DE' },
+  { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' },
+  { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼', locale: 'ar-SA' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', locale: 'ar-AE' },
+  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'د.ك', locale: 'ar-KW' },
+  { code: 'QAR', name: 'Qatari Riyal', symbol: '﷼', locale: 'ar-QA' },
+  { code: 'BHD', name: 'Bahraini Dinar', symbol: '.د.ب', locale: 'ar-BH' },
+  { code: 'OMR', name: 'Omani Rial', symbol: '﷼', locale: 'ar-OM' },
+  { code: 'JOD', name: 'Jordanian Dinar', symbol: 'د.ا', locale: 'ar-JO' },
+  { code: 'LBP', name: 'Lebanese Pound', symbol: 'ل.ل', locale: 'ar-LB' },
+] as const
+
+export type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number]['code']
+
+/** Get currency metadata (symbol, locale) by code */
+export function getCurrencyMeta(code: string = 'EGP') {
+  return SUPPORTED_CURRENCIES.find((c) => c.code === code) || SUPPORTED_CURRENCIES[0]
 }
 
-/**
- * Format a value that's already in DOLLARS (not cents).
- * Use this for form inputs where the user types dollar amounts.
- */
-export function formatDollars(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount || 0)
+/** Format a money amount (stored as Int cents) for display in the given currency */
+export function formatMoney(amount: number, currency = 'EGP'): string {
+  const dollars = (amount || 0) / 100
+  const meta = getCurrencyMeta(currency)
+  try {
+    return new Intl.NumberFormat(meta.locale, {
+      style: 'currency',
+      currency: meta.code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(dollars)
+  } catch {
+    // Fallback if locale/currency not supported
+    return `${meta.symbol}${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+}
+
+/** Format a value already in display currency (not cents) */
+export function formatDollars(amount: number, currency = 'EGP'): string {
+  const meta = getCurrencyMeta(currency)
+  try {
+    return new Intl.NumberFormat(meta.locale, {
+      style: 'currency',
+      currency: meta.code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0)
+  } catch {
+    return `${meta.symbol}${(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
 }
 
 export function formatNumber(amount: number, decimals = 2): string {
-  // Amounts are stored as Int (cents) — convert to dollars for display
   const dollars = (amount || 0) / 100
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: decimals,
@@ -79,7 +112,6 @@ export function formatNumber(amount: number, decimals = 2): string {
 }
 
 export function formatCompact(amount: number): string {
-  // Amounts are stored as Int (cents) — convert to dollars for display
   const dollars = (amount || 0) / 100
   return new Intl.NumberFormat('en-US', {
     notation: 'compact',
@@ -87,12 +119,12 @@ export function formatCompact(amount: number): string {
   }).format(dollars)
 }
 
-/** Convert a dollar amount (from form input) to cents (Int) for DB storage */
+/** Convert a display amount (from form input) to cents (Int) for DB storage */
 export function dollarsToCents(dollars: number): number {
   return Math.round((dollars || 0) * 100)
 }
 
-/** Convert cents (Int, from DB) to dollars for display */
+/** Convert cents (Int, from DB) to display amount */
 export function centsToDollars(cents: number): number {
   return (cents || 0) / 100
 }
@@ -100,8 +132,7 @@ export function centsToDollars(cents: number): number {
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString('en-GB', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -111,8 +142,7 @@ export function formatDate(date: Date | string | null | undefined): string {
 export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  if (isNaN(d.getTime())) return '—'
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString('en-GB', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',

@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         bankName: bankName || null,
         accountNumber: accountNumber || '—',
         accountType: accountType || 'Checking',
-        currency: currency || 'USD',
+        currency: currency || 'EGP',
         balance: balance ? Math.round(Number(balance) * 100) : 0,
         active: true,
       },

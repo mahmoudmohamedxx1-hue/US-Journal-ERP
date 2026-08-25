@@ -39,8 +39,8 @@ export async function getSystemContext(): Promise<SystemContext> {
       data: {
         name: 'US Journal ERP',
         legalName: 'US Journal ERP',
-        currency: 'USD',
-        baseCurrency: 'USD',
+        currency: 'EGP',
+        baseCurrency: 'EGP',
       },
     })
     console.log(`[api] Auto-created organization: ${org.name}`)

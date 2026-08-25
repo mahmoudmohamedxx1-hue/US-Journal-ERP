@@ -13,7 +13,7 @@ interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 }
 
 export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ value, onValueChange, onChange, align = 'right', className, currency = 'USD', ...rest }, ref) => {
+  ({ value, onValueChange, onChange, align = 'right', className, currency = 'EGP', ...rest }, ref) => {
     const displayValue =
       value === null || value === undefined || value === ''
         ? ''
@@ -21,10 +21,19 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
           ? value
           : String(value)
 
+    // Get currency symbol from our supported currencies
+    const symbol = currency === 'EGP' ? 'E£'
+      : currency === 'USD' ? '$'
+      : currency === 'EUR' ? '€'
+      : currency === 'GBP' ? '£'
+      : currency === 'SAR' ? '﷼'
+      : currency === 'AED' ? 'د.إ'
+      : currency
+
     return (
       <div className="relative">
         <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
-          {currency === 'USD' ? '$' : currency}
+          {symbol}
         </span>
         <Input
           ref={ref}
