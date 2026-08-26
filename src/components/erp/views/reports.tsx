@@ -31,6 +31,19 @@ export function ReportsView() {
   const [from, setFrom] = React.useState('2026-01-01')
   const [to, setTo] = React.useState('2026-12-31')
   const [asOf, setAsOf] = React.useState('2026-12-31')
+  const [orgCurrency, setOrgCurrency] = React.useState('USD')
+
+  // Fetch the org's base currency once for report headers
+  React.useEffect(() => {
+    fetch('/api/organization')
+      .then((r) => r.json())
+      .then((d) => {
+        const org = d?.organization
+        if (org?.baseCurrency) setOrgCurrency(org.baseCurrency)
+        else if (org?.currency) setOrgCurrency(org.currency)
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -105,7 +118,7 @@ export function ReportsView() {
 
       {/* Report body */}
       {selectedReport === 'trial-balance' && <TrialBalanceReport asOf={asOf} />}
-      {selectedReport === 'balance-sheet' && <BalanceSheetReport asOf={asOf} />}
+      {selectedReport === 'balance-sheet' && <BalanceSheetReport asOf={asOf} currency={orgCurrency} />}
       {selectedReport === 'income-statement' && <IncomeStatementReport from={from} to={to} />}
       {selectedReport === 'cash-flow' && <CashFlowReport from={from} to={to} />}
     </div>
@@ -188,7 +201,7 @@ function TrialBalanceReport({ asOf }: { asOf: string }) {
 }
 
 // ============== Balance Sheet ==============
-function BalanceSheetReport({ asOf }: { asOf: string }) {
+function BalanceSheetReport({ asOf, currency = 'USD' }: { asOf: string; currency?: string }) {
   const [data, setData] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
 
@@ -208,7 +221,7 @@ function BalanceSheetReport({ asOf }: { asOf: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Balance Sheet</CardTitle>
-        <CardDescription>As of {formatDate(data.asOf)} · all figures in EGP</CardDescription>
+        <CardDescription>As of {formatDate(data.asOf)} · all figures in {currency}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2">

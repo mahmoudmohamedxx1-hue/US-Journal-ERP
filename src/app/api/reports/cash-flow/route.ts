@@ -61,13 +61,20 @@ export async function GET(req: NextRequest) {
       if (Math.abs(amt) > 0.005) operatingAdjustments.push({ code: a.code, name: a.name, amount: amt })
       continue
     }
+    // Detect cash-equivalent accounts: cash, checking, savings, bank
+    const isCashAccount = a.accountType === 'Asset' && a.subType === 'Current Asset' && (
+      lowerName.includes('cash') || lowerName.includes('checking') ||
+      lowerName.includes('savings') || lowerName.includes('bank') ||
+      lowerName.includes('petty cash')
+    )
     // Other non-cash current assets / current liabilities changes
-    if (a.accountType === 'Asset' && a.subType === 'Current Asset' &&
-        !a.name.toLowerCase().includes('cash')) {
-      const amt = -netFor(a.id) // increase in asset = decrease in cash
+    if (a.accountType === 'Asset' && a.subType === 'Current Asset' && !isCashAccount) {
+      // Asset is debit-normal — Dr increase means asset went up = cash went down
+      const amt = -netFor(a.id)
       if (Math.abs(amt) > 0.005) operatingAdjustments.push({ code: a.code, name: a.name, amount: amt })
     } else if (a.accountType === 'Liability' && a.subType === 'Current Liability') {
-      const amt = netFor(a.id) // increase in liab = increase in cash
+      // Liability is credit-normal — Cr increase (Dr-Cr net is negative) means liab went up = cash went up
+      const amt = -netFor(a.id)
       if (Math.abs(amt) > 0.005) operatingAdjustments.push({ code: a.code, name: a.name, amount: amt })
     }
   }
@@ -94,21 +101,28 @@ export async function GET(req: NextRequest) {
   for (const a of accounts) {
     if (a.subType === 'Header') continue
     if (a.accountType === 'Equity') {
-      const amt = netFor(a.id) // credit balance increases = cash inflow
+      // Equity is credit-normal — credit increases (Dr-Cr net is negative) = positive cash inflow
+      const amt = -netFor(a.id)
       if (Math.abs(amt) > 0.005) financing.push({ code: a.code, name: a.name, amount: amt })
     } else if (a.accountType === 'Liability' && a.subType === 'Long-term Liability') {
-      const amt = netFor(a.id)
+      // Long-term liability is also credit-normal — credit increases = positive cash inflow
+      const amt = -netFor(a.id)
       if (Math.abs(amt) > 0.005) financing.push({ code: a.code, name: a.name, amount: amt })
     }
   }
   const cashFromFinancing = financing.reduce((s, r) => s + r.amount, 0)
 
-  // Net change in cash
+  // Net change in cash — same detection logic as operating adjustments
   let cashChange = 0
   for (const a of accounts) {
-    if (a.accountType === 'Asset' && a.subType === 'Current Asset' &&
-        a.name.toLowerCase().includes('cash')) {
-      cashChange += netFor(a.id)
+    if (a.subType === 'Header') continue
+    if (a.accountType !== 'Asset' || a.subType !== 'Current Asset') continue
+    const lowerName = a.name.toLowerCase()
+    const isCashAccount = lowerName.includes('cash') || lowerName.includes('checking') ||
+      lowerName.includes('savings') || lowerName.includes('bank') ||
+      lowerName.includes('petty cash')
+    if (isCashAccount) {
+      cashChange += netFor(a.id)  // debit-normal: Dr increase = cash increase
     }
   }
 

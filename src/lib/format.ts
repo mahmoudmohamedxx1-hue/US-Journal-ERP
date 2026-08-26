@@ -72,7 +72,7 @@ export function getCurrencyMeta(code: string = 'EGP') {
 }
 
 /** Format a money amount (stored as Int cents) for display in the given currency */
-export function formatMoney(amount: number, currency = 'EGP'): string {
+export function formatMoney(amount: number, currency = 'USD'): string {
   const dollars = (amount || 0) / 100
   const meta = getCurrencyMeta(currency)
   try {
@@ -89,7 +89,7 @@ export function formatMoney(amount: number, currency = 'EGP'): string {
 }
 
 /** Format a value already in display currency (not cents) */
-export function formatDollars(amount: number, currency = 'EGP'): string {
+export function formatDollars(amount: number, currency = 'USD'): string {
   const meta = getCurrencyMeta(currency)
   try {
     return new Intl.NumberFormat(meta.locale, {

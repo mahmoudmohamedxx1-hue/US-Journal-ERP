@@ -30,14 +30,28 @@ export function CustomReportView() {
     const results: ReportRow[] = []
     const accountIds = selectedAccounts.size > 0 ? Array.from(selectedAccounts) : accounts.map((a) => a.id)
     for (const acctId of accountIds) {
-      const res = await fetch(`/api/journal-lines?accountId=${acctId}&from=${from}&to=${to}&pageSize=1`)
+      // Fetch ALL journal lines for this account in the date range (not just pageSize=1)
+      const res = await fetch(`/api/journal-lines?accountId=${acctId}&from=${from}&to=${to}&pageSize=10000`)
       const data = await res.json()
       const acct = accounts.find((a) => a.id === acctId)
       if (acct && data.total > 0) {
+        // Sum debit/credit across all returned lines
+        const lines = data.journalLines || data.lines || []
+        let totalDebit = 0
+        let totalCredit = 0
+        for (const l of lines) {
+          totalDebit += Number(l.debit || 0)
+          totalCredit += Number(l.credit || 0)
+        }
+        // Balance: for debit-normal accounts (Asset, Expense), it's Dr - Cr; for credit-normal (Liability, Equity, Revenue), Cr - Dr
+        const isDebitNormal = acct.accountType === 'Asset' || acct.accountType === 'Expense'
+        const balance = isDebitNormal ? totalDebit - totalCredit : totalCredit - totalDebit
         results.push({
           accountCode: acct.code,
           accountName: acct.name,
-          debit: 0, credit: 0, balance: 0, // simplified — actual values would need aggregation
+          debit: totalDebit,  // keep as cents — formatMoney will divide by 100
+          credit: totalCredit,
+          balance,
         })
       }
     }
