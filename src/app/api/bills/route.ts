@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
           amountPaid: 0,
           status,
           description: description || null,
-          currency: currency || 'EGP',
+          currency: currency || 'USD',
         },
       })
       for (let i = 0; i < parsedLines.length; i++) {

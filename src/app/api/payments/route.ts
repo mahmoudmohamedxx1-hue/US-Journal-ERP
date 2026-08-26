@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
           partyId,
           bankAccountId,
           amount: amountCents,
-          currency: currency || 'EGP',
+          currency: currency || 'USD',
           reference: reference || null,
           notes: notes || null,
           status: 'Posted',

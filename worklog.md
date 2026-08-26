@@ -306,3 +306,73 @@ Stage Summary:
 - The single biggest discovery: Prisma client cached the OLD DB connection after I deleted and recreated custom.db. This caused 2 hours of confusion where the API returned data that didn't match what I saw in the SQLite file directly. Restarting the dev server resolved it but this should never happen in production (production uses the same DB throughout).
 - All 4 financial reports now reconcile correctly with each other: Trial Balance $1,029,325.50, Balance Sheet $859,125.50, Income Statement Net -$30,259.68, Cash Flow Net Change $791,325.50 (cash movement).
 - The Custom Report Builder went from a placeholder (showing $0.00 for everything) to a fully functional report with real per-account balances.
+
+---
+Task ID: deep-browser-qa-round-4
+Agent: main
+Task: Deep QA pass — focus on real-world workflows: AR/AP payment allocation, RBAC, backup security, audit hash chain, recurring journal execution, budget vs actual, mobile, concurrency, edge cases
+
+Work Log:
+- Tested full AR workflow: invoice exists, payment created via API, but payment NOT allocated to invoice
+- Tested full AP workflow: similar — payment doesn't update bill status
+- Tested concurrent journal creation: 10 simultaneous requests, only 2 succeeded (8 silently dropped due to SQLite write locking)
+- Tested edge cases: negative amounts rejected, future dates (year 2099) ACCEPTED with no warning
+- Tested audit log hash chain: ALL 27 entries have hash=NULL (seed bypassed logAudit function)
+- Tested backup endpoint: POST /api/backup wipes ALL data with NO authentication
+- Tested organization settings: "Save changes" is a placeholder, doesn't actually save
+- Tested budget vs actual: actual was hardcoded to 0, fixed to compute from journal lines
+
+QA Findings + Fixes:
+
+1. CRITICAL (Security): POST /api/backup is a destructive endpoint that wipes ALL data with NO authentication. Anyone can call `curl -X POST http://localhost:3000/api/backup` and wipe the entire database. No confirmation, no auth, no rate limit.
+
+2. CRITICAL (Audit Integrity): ALL 27 audit log entries have hash=NULL. The hash chain (designed to make audit log tamper-proof) is completely broken. Seed script creates audit entries directly via `db.auditLog.createMany` instead of calling `logAudit()` which computes hashes. Any DB admin can modify audit entries without detection.
+
+3. CRITICAL (Auth Bypass): Login/logout APIs exist and work correctly, but `getSystemContext()` bypasses authentication entirely — it just picks the first user from the DB. `page.tsx` never renders the LoginView. Anyone with the URL has full admin access. No RBAC enforcement on any API route (Accountant can post journals, Viewer can delete, etc.).
+
+4. CRITICAL (Workflow Gap): Payment API supports `allocations` array to link payments to invoices/bills, but the UI form has NO field for selecting which invoice/bill to allocate to. Result: payments are recorded but invoices stay "Open" forever, customer balances never decrease, AR aging is wrong.
+
+5. CRITICAL (Concurrent Data Loss): 10 concurrent journal creation requests → only 2 succeeded. 8 silently dropped due to SQLite write locking. The retry loop handles P2002 (unique constraint) but NOT "database is locked" errors. For a single-user desktop ERP this is acceptable; for multi-user it's a showstopper.
+
+6. HIGH (Silent Form Failures): Sales Orders and Purchase Orders creation dialogs silently fail — the API requires `lines` array but the form has no lines field. User clicks "Create", nothing happens, no error shown. Same issue may affect other forms that require line items.
+
+7. HIGH (Currency Default Wrong): Invoice, Bill, and Payment APIs default currency to 'EGP' instead of org's base currency. Fixed to default to 'USD'. Also fixed existing 5 invoices and 6 bills in DB from EGP to USD.
+
+8. HIGH (Budget Actual Hardcoded): Budget vs Actual report showed $0.00 for actual amounts because the GET /api/budgets endpoint returned the stored `actualAmount: 0` field without computing from journal lines. Fixed: now queries posted journal lines for the budget's account + period and sums debit/credit based on account type. Verified: Product Sales budget $100,000 vs actual $26,388.89 (computed correctly from 4100's posted journals).
+
+9. MEDIUM (Future Date Accepted): Journal with date 2099-12-31 is accepted with no warning. Journal number becomes JE-2099-XXXX. Real ERPs should reject or warn about future-dated entries beyond a reasonable window (e.g., 1 year).
+
+10. MEDIUM (Org Settings Fake Save): Organization settings "Save changes" button shows toast "Organization settings saved (demo)" but doesn't actually save. Code comment says "Optimistic update only — full PATCH endpoint omitted for brevity". User can change currency to "BITCOIN" and it appears saved but DB still has USD.
+
+11. MEDIUM (No DELETE Endpoints): Only journals have a DELETE endpoint. No way to delete vendors, customers, invoices, bills, bank accounts, products, fixed assets, employees, budgets, subsidiaries, or accounts. Users can create but never remove records.
+
+12. MEDIUM (Recurring Journals Can't Run): Recurring journals have NO execute/run endpoint. You can create them with a `nextRunDate` but nothing ever processes them. The "nextRunDate" field is set but no cron job or manual trigger exists.
+
+13. MEDIUM (Notifications Empty): /api/notifications returns empty array despite 3 overdue invoices, 1 overdue bill, 7 unposted journals. System should auto-generate notifications for these events but doesn't.
+
+14. MEDIUM (Language Toggle Does Nothing): Clicking the language toggle sets localStorage and reloads, but no Arabic translations exist. All UI text stays in English.
+
+15. LOW (Anomaly Detection Thresholds): Only flags invoices overdue by >90 days. Should have graduated thresholds (30/60/90 days) with escalating severity.
+
+16. LOW (Base Currency Input Type): Organization settings has Base Currency as a TEXT input, not a dropdown. User can type "BITCOIN" or any invalid string.
+
+Verified Working:
+- Single journal creation works (26ms response time) ✓
+- Negative amounts rejected by Zod validation ✓
+- Non-existent account codes rejected with clear error ✓
+- Login API works (correct password → 200, wrong password → 401) ✓
+- Logout API works ✓
+- /api/health returns healthy status ✓
+- Mobile responsive layout works (375x812 viewport) ✓
+- Sidebar toggle works on mobile ✓
+- Theme toggle works (dark/light) ✓
+- XSS protection: customer name with <script> stored but rendered as text ✓
+- Anomaly detection finds 1 critical overdue invoice (148 days) ✓
+- Cash Flow Forecast includes recurring journal projections ✓
+- Multi-company: subsidiary creation works ✓
+
+Stage Summary:
+- 16 bugs found, 2 fixed (currency defaults, budget vs actual)
+- 5 CRITICAL bugs remain unfixed (backup security, audit hash chain, auth bypass, payment allocation, concurrent data loss)
+- The 5 critical bugs are all architectural — fixing them properly would require significant refactoring (real auth middleware, hash chain re-computation, UI for payment allocation, Postgres migration)
+- The budget vs actual fix was the most impactful single fix — turned a useless report into a working variance tracker
