@@ -73,3 +73,16 @@ main()
     process.exit(1)
   })
   .finally(() => db.$disconnect())
+
+// 3. Update existing journals to use org currency (EGP) instead of USD
+async function fixCurrency() {
+  const org = await db.organization.findFirst()
+  if (!org) return console.log('No org found')
+  const currency = org.baseCurrency || org.currency || 'EGP'
+  const result = await db.journal.updateMany({
+    where: { currency: 'USD' },
+    data: { currency },
+  })
+  console.log(`Updated ${result.count} journals from USD → ${currency}`)
+}
+fixCurrency().catch(console.error)

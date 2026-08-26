@@ -46,15 +46,17 @@ export async function GET(req: NextRequest) {
   for (const a of accounts) {
     const net = netFor(a.id)
     if (a.accountType === 'Revenue') netIncome += -net
-    else if (a.accountType === 'Expense') netIncome += net
+    else if (a.accountType === 'Expense') netIncome -= net  // expenses reduce net income
   }
 
   // Operating adjustments: changes in non-cash current assets/liabilities + depreciation
   const operatingAdjustments: Array<{ code: string; name: string; amount: number }> = []
   for (const a of accounts) {
     if (a.subType === 'Header') continue
-    // Depreciation is added back (positive)
-    if (a.accountType === 'Asset' && a.name.toLowerCase().includes('accumulated depreciation')) {
+    // Depreciation is added back (positive) — match "accumulated depreciation" OR "accum dep"
+    const lowerName = a.name.toLowerCase()
+    const isAccumDep = lowerName.includes('accumulated depreciation') || lowerName.includes('accum dep') || lowerName.includes('accumdep')
+    if (a.accountType === 'Asset' && isAccumDep) {
       const amt = -netFor(a.id) // credit balance increases, add back as positive
       if (Math.abs(amt) > 0.005) operatingAdjustments.push({ code: a.code, name: a.name, amount: amt })
       continue
@@ -76,9 +78,11 @@ export async function GET(req: NextRequest) {
   const investing: Array<{ code: string; name: string; amount: number }> = []
   for (const a of accounts) {
     if (a.subType === 'Header') continue
+    const lowerName = a.name.toLowerCase()
+    const isAccumDep = lowerName.includes('accumulated depreciation') || lowerName.includes('accum dep') || lowerName.includes('accumdep')
     if (a.accountType === 'Asset' &&
         (a.subType === 'Fixed Asset' || a.subType === 'Intangible' || a.subType === 'Other Asset') &&
-        !a.name.toLowerCase().includes('accumulated depreciation')) {
+        !isAccumDep) {
       const amt = -netFor(a.id) // increase in asset = cash outflow
       if (Math.abs(amt) > 0.005) investing.push({ code: a.code, name: a.name, amount: amt })
     }

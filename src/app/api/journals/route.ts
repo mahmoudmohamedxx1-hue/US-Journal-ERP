@@ -68,6 +68,12 @@ export async function POST(req: NextRequest) {
   if (!validation.success) {
     return err(validation.error, 422, validation.details, 'VALIDATION_ERROR')
   }
+  // Fetch org currency to default journals if not provided
+  const org = await db.organization.findUnique({
+    where: { id: ctx.organizationId },
+    select: { baseCurrency: true, currency: true },
+  })
+  const orgCurrency = org?.baseCurrency || org?.currency || 'EGP'
   const {
     journalDate,
     source,
@@ -158,7 +164,8 @@ export async function POST(req: NextRequest) {
             source: source || 'Manual',
             reference: reference || null,
             description: description || null,
-            currency,
+            // Use org's base currency if not explicitly set by the client
+            currency: currency || orgCurrency,
             exchangeRate: Math.round((exchangeRate || 1) * 100),  // store as basis points
             status,
             totalDebit,

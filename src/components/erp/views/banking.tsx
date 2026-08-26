@@ -120,7 +120,7 @@ export function BankingView() {
             { value: 'Savings', label: 'Savings' },
             { value: 'Cash', label: 'Cash' },
           ], defaultValue: 'Checking' },
-          { key: 'balance', label: 'Opening Balance (USD)', type: 'number', placeholder: '0.00', helpText: 'Enter amount in dollars (e.g. 50000)' },
+          { key: 'balance', label: 'Opening Balance (EGP)', type: 'number', placeholder: '0.00', helpText: 'Enter amount in EGP (e.g. 50000)' },
           { key: 'currency', label: 'Currency', type: 'select', options: [
             { value: 'EGP', label: 'EGP — Egyptian Pound' },
             { value: 'USD', label: 'USD — US Dollar' },

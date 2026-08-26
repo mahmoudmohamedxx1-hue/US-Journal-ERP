@@ -163,7 +163,27 @@ export function ChartOfAccountsView() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = accounts.flatMap(a => [{
+              code: a.code,
+              name: a.name,
+              type: a.accountType,
+              subType: a.subType || '',
+              normalBalance: a.normalBalance,
+              active: a.active ? 'Yes' : 'No',
+              parentId: a.parentId || '',
+            }])
+            // CSV export
+            const headers = ['Code', 'Name', 'Type', 'Sub Type', 'Normal Balance', 'Active', 'Parent ID']
+            const csv = [headers.join(','), ...rows.map(r => [r.code, `"${r.name.replace(/"/g, '""')}"`, r.type, r.subType, r.normalBalance, r.active, r.parentId].join(','))].join('\n')
+            const blob = new Blob([csv], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `chart-of-accounts-${new Date().toISOString().slice(0,10)}.csv`
+            a.click()
+            URL.revokeObjectURL(url)
+          }}>
             <Download className="mr-1.5 h-3.5 w-3.5" />
             Export
           </Button>

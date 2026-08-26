@@ -208,7 +208,7 @@ function BalanceSheetReport({ asOf }: { asOf: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Balance Sheet</CardTitle>
-        <CardDescription>As of {formatDate(data.asOf)} · all figures in USD</CardDescription>
+        <CardDescription>As of {formatDate(data.asOf)} · all figures in EGP</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2">

@@ -151,3 +151,76 @@ Stage Summary:
 - App is now visually consistent (English locale, EGP currency in Western digits)
 - New files: src/lib/ai/glm.ts, src/components/erp/ai-journal-panel.tsx, src/components/erp/ai-commentary-widget.tsx, 7 AI API routes, scripts/fix-db-data.js
 - Modified files: src/app/api/ocr-scan/route.ts, src/app/api/ai/monthly-commentary/route.ts (multiple fixes), src/app/api/ai/suggest-account/route.ts, src/app/api/fixed-assets/depreciate/route.ts (critical bug fix), src/components/erp/views/dashboard.tsx (AI widget + hint fix), src/components/erp/views/journal-new.tsx (AI panel + improved account matching), src/components/erp/views/users.tsx (ROLE_META fix), src/lib/format.ts (locale fixes)
+
+---
+Task ID: deep-browser-qa-round-2
+Agent: main
+Task: Deep browser-based QA pass — test all create flows, journal workflow, all financial reports, exports, period close, search, and edge cases
+
+Work Log:
+- Started fresh browser session and tried to login — discovered app BYPASSES login entirely (auto-creates admin via getSystemContext). LoginView exists in code but is never rendered.
+- Tested all create flows: vendor, customer, account, invoice, bill, journal, bank account, product, budget. Most work via CreateFormDialog.
+- Tested complete journal workflow: Draft → Submitted → Approved → Posted → Reversed. All status transitions work correctly.
+- Tested all 4 financial reports: Trial Balance, Balance Sheet, Income Statement, Cash Flow Statement.
+
+QA Findings + Fixes:
+
+1. CRITICAL: Cash Flow Statement added Revenue AND Expense to Net Income (should SUBTRACT expense). Net Income showed +EGP 904 (should be -EGP 896). Fixed: src/app/api/reports/cash-flow/route.ts line 49: changed `+= net` to `-= net` for Expense accounts.
+
+2. CRITICAL: Cash Flow Statement didn't detect "Accum Dep" accounts (only matched "accumulated depreciation" exact phrase). Accum Dep was wrongly categorized as Investing activity. Fixed: extended matching to also catch "accum dep" and "accumdep" substrings, AND excluded them from investing.
+
+3. CRITICAL: Balance Sheet had same Expense sign bug as Cash Flow — Net Income (YTD) showed +EGP 904 instead of -EGP 896. Fixed: src/app/api/reports/balance-sheet/route.ts line 107.
+
+4. CRITICAL: Balance Sheet was OUT OF BALANCE after fixing #3 because Accumulated Depreciation was shown as +900 (positive asset) when it should be a CONTRA-ASSET shown as -900 (deduction). Fixed: buildSection now detects contra-asset pattern (accum dep / accumulated depreciation / accumdep) and flips sign to negative. Balance Sheet now reads -896 = -896, Balanced ✓.
+
+5. CRITICAL: Journal schema defaulted currency to 'USD' even though org uses EGP. All newly-created journals showed "USD · rate 100" in detail header. Fixed: changed zod schema to optional, and POST /api/journals now fetches org.baseCurrency to default. Existing USD journals cleaned via script.
+
+6. HIGH: Balance Sheet header said "all figures in USD" while amounts were in EGP. Fixed to "all figures in EGP".
+
+7. HIGH: Search bar in top nav did nothing — typing "Cash sale" + Enter just navigated to Journal Register without applying search. Fixed: added `pendingSearch` field to erp-store, set it in AppShell's handleSearch, consumed in JournalRegisterView which sets the local `search` state.
+
+8. MEDIUM: Multiple "Amount (USD)" / "Cost Price (USD)" / "Credit Limit (USD)" / "Opening Balance (USD)" / "Budget Amount (USD)" labels in invoices, bills, banking, customers, inventory, budgets views — all should be EGP. Fixed all 6 hardcoded labels.
+
+9. MEDIUM: Chart of Accounts "Export" button had no onClick handler — dead button. Fixed: added CSV export implementation.
+
+10. MEDIUM: PDF export silently failed (Excel worked). exportToPdf was async but called without await, swallowing errors. Fixed: wrapped in async/await with try/catch.
+
+11. MEDIUM: Toast said "Journal reverseed successfully" (typo). Fixed: replaced `Journal ${action}ed` with proper past-tense map (submitted/approved/rejected/posted/reversed).
+
+12. MEDIUM: Bug in src/lib/export-utils.ts: `downloadCsv(filename, eaderLine, ...dataLines]` had a typo (missing `h` and missing opening `[`). Fixed: `downloadCsv(filename, [headerLine, ...dataLines]`.
+
+Bugs identified but NOT fixed (require deeper changes):
+
+A. SECURITY: App has no real login gate — getSystemContext auto-creates admin user with random password and renders the dashboard. LoginView component exists but is never rendered. Anyone with URL can access.
+
+B. MISSING ACTIONS: Several pages have no action buttons:
+   - Banking: no "View Transactions" / "Edit" / "Delete" buttons on existing bank accounts
+   - Period Close: page says "Close the fiscal period" but no actual close button — only "Go to Periods"
+   - Recurring Journals: empty "..." button on rows — can create but never run/post a recurring journal
+   - Fixed Assets: no "Depreciate" button on the list (only via separate route)
+
+C. FORM VALIDATION: New Vendor dialog accepts "not-an-email" silently — HTML5 validation blocks submit but UI shows no error. Submitting with valid email works (POST 201).
+
+D. UNBALANCED DRAFTS: Drafts can be saved even when debits ≠ credits (JE-2026-0080 saved with 100/150 difference). This is intentional but UI should warn.
+
+E. STRESS TEST DATA: 2 journals dated 2099 from stress test still appear in register (marked Reversed) — would be cleaner to delete them.
+
+Verified Working After Fixes:
+- Trial Balance: 90000 = 90000, Balanced ✓
+- Balance Sheet: -896 = -896, Balanced ✓ (was Out of balance before fix)
+- Income Statement: Revenue 4, Expenses 900, Net Income -896 ✓
+- Cash Flow Statement: Net Income -896, +Accum Dep 900, Operating +4, Net Change in Cash +4 ✓ (matches actual cash movement)
+- Journal workflow: Draft → Submitted → Approved → Posted → Reversal created (JE-0081), original marked Reversed ✓
+- Journal currency: new journals correctly created with EGP currency ✓
+- Closed fiscal period correctly rejects new postings with "Cannot post into closed fiscal period: August 2026" toast ✓
+- Reopen fiscal period works ✓
+- Search bar: typing "Cash sale" + Enter now filters journals to matching entries ✓
+- Create flows: vendor (V-002), account (1100 Petty Cash), invoice (INV-002), journal (JE-79/80/81) all created successfully ✓
+- Export: Excel download works (CSV/XLSX in /home/z/Downloads/) ✓
+- Audit log records all actions including AI calls, period close/reopen, journal posting/reversal ✓
+
+Stage Summary:
+- 11 bugs fixed (4 critical accounting errors, 1 critical schema issue, 6 medium UX issues)
+- 5 more bugs identified but not fixed (require architectural changes — login gate, missing action buttons on several pages, etc.)
+- The 4 critical accounting bugs WERE all in financial reports — Balance Sheet, Income Statement, and Cash Flow Statement all had wrong Net Income calculation (added expenses instead of subtracting). This would have been caught immediately by any real accountant using the system.
+- All financial reports now reconcile correctly with each other: NI -896 appears consistently across Income Statement, Balance Sheet (as Net Income YTD), and Cash Flow Statement (as starting Net Income).

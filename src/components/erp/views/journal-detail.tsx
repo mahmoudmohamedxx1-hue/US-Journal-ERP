@@ -106,7 +106,15 @@ export function JournalDetailView() {
       })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || `Failed to ${action}`)
-      toast.success(`Journal ${action}ed successfully`)
+      // Use proper past-tense form per action
+      const pastTense: Record<string, string> = {
+        submit: 'submitted',
+        approve: 'approved',
+        reject: 'rejected',
+        post: 'posted',
+        reverse: 'reversed',
+      }
+      toast.success(`Journal ${pastTense[action] || action + 'ed'} successfully`)
       if (action === 'reverse' && d.reversalId) {
         openJournal(d.reversalId)
       } else {

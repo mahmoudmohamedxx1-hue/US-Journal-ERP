@@ -144,7 +144,7 @@ export function InvoicesView() {
           { key: 'customerId', label: 'Customer', type: 'select', required: true, options: customers.map((c) => ({ value: c.id, label: c.name })) },
           { key: 'invoiceDate', label: 'Invoice Date', type: 'date', required: true, defaultValue: new Date().toISOString().slice(0, 10) },
           { key: 'dueDate', label: 'Due Date', type: 'date', required: true, defaultValue: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) },
-          { key: 'amount', label: 'Amount (USD)', type: 'number', required: true, placeholder: '5000', helpText: 'Enter amount in dollars' },
+          { key: 'amount', label: 'Amount (EGP)', type: 'number', required: true, placeholder: '5000', helpText: 'Enter amount in EGP' },
           { key: 'description', label: 'Description', type: 'text', placeholder: 'Consulting services for August' },
         ]}
       />

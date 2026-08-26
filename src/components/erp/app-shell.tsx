@@ -139,10 +139,11 @@ const NAV_GROUPS: NavGroup[] = [
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { view, setView, openJournal } = useErpStore()
+  const { view, setView, openJournal, setPendingSearch } = useErpStore()
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState('')
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -156,6 +157,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const handleNav = (v: ErpView) => {
     setView(v)
     setMobileOpen(false)
+  }
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const q = (e.target as HTMLInputElement).value.trim()
+      setPendingSearch(q)
+      setView('journals')
+    }
   }
 
   return (
@@ -273,11 +282,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <input
                 placeholder="Search journals, accounts, vendors…"
                 className="h-8 w-full rounded-md border border-input bg-background pl-7 pr-2 text-sm outline-none focus:border-accent"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setView('journals')
-                  }
-                }}
+                onKeyDown={handleSearch}
               />
             </div>
           </div>

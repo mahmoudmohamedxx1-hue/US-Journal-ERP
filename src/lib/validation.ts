@@ -40,7 +40,7 @@ export const createJournalSchema = z.object({
   source: z.string().max(50).optional(),
   reference: z.string().max(200).optional(),
   description: z.string().max(1000).optional(),
-  currency: z.string().max(3).default('USD'),
+  currency: z.string().max(3).optional(),  // override with org's base currency if not provided
   exchangeRate: z.number().min(0).max(100000).default(1.0),
   lines: z.array(journalLineSchema).min(2, 'A journal must contain at least two lines').max(1000, 'Too many lines'),
   submit: z.boolean().default(false),

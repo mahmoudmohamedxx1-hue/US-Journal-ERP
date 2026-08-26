@@ -43,16 +43,21 @@ interface AppState {
   view: ErpView
   selectedJournalId: string | null
   selectedReport: string
+  /** A pending search query that the next-viewed screen can consume. */
+  pendingSearch: string
   setView: (view: ErpView) => void
   openJournal: (id: string) => void
   setReport: (report: string) => void
+  setPendingSearch: (q: string) => void
 }
 
 export const useErpStore = create<AppState>((set) => ({
   view: 'dashboard',
   selectedJournalId: null,
   selectedReport: 'trial-balance',
+  pendingSearch: '',
   setView: (view) => set({ view }),
   openJournal: (id) => set({ view: 'journal-detail', selectedJournalId: id }),
   setReport: (report) => set({ selectedReport: report }),
+  setPendingSearch: (q) => set({ pendingSearch: q }),
 }))

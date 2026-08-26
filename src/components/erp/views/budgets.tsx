@@ -79,7 +79,7 @@ export function BudgetsView() {
       <CreateFormDialog open={showCreate} onOpenChange={setShowCreate} title="Create Budget" description="Set a budget target for an account and period." apiEndpoint="/api/budgets" successMessage="Budget created" onSuccess={() => setTimeout(() => load(), 100)} fields={[
         { key: 'accountId', label: 'Account', type: 'select', required: true, options: accounts.map((a) => ({ value: a.id, label: `${a.code} — ${a.name}` })) },
         { key: 'period', label: 'Period', type: 'text', required: true, placeholder: '2026', helpText: 'Use "2026" for full year or "2026-01" for January' },
-        { key: 'budgetAmount', label: 'Budget Amount (USD)', type: 'number', required: true, placeholder: '50000', helpText: 'Enter amount in dollars' },
+        { key: 'budgetAmount', label: 'Budget Amount (EGP)', type: 'number', required: true, placeholder: '50000', helpText: 'Enter amount in EGP' },
       ]} />
     </div>
   )

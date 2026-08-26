@@ -54,7 +54,7 @@ interface JournalListItem {
 }
 
 export function JournalRegisterView() {
-  const { openJournal, setView } = useErpStore()
+  const { openJournal, setView, pendingSearch, setPendingSearch } = useErpStore()
   const [journals, setJournals] = React.useState<JournalListItem[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState('')
@@ -67,6 +67,15 @@ export function JournalRegisterView() {
   const [actionLoading, setActionLoading] = React.useState<Record<string, boolean>>({})
 
   const pageSize = 20
+
+  // Consume pending search from global store (set by AppShell search bar)
+  React.useEffect(() => {
+    if (pendingSearch) {
+      setSearch(pendingSearch)
+      setPendingSearch('')
+      setPage(1)
+    }
+  }, [pendingSearch, setPendingSearch])
 
   const load = React.useCallback(() => {
     setLoading(true)
@@ -163,23 +172,27 @@ export function JournalRegisterView() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            import('@/lib/export-utils').then(({ exportToExcel, exportToPdf }) => {
-              exportToExcel(`journals-${Date.now()}`, journals as unknown as Array<Record<string, unknown>>, [
-                { key: 'journalNumber', label: 'Journal Number' },
-                { key: 'description', label: 'Description' },
-                { key: 'journalDate', label: 'Date' },
-                { key: 'status', label: 'Status' },
-                { key: 'totalDebit', label: 'Debit (cents)' },
-                { key: 'reference', label: 'Reference' },
-                { key: 'source', label: 'Source' },
-              ])
-              exportToPdf(`journals-${Date.now()}`, 'Journal Register', journals as unknown as Array<Record<string, unknown>>, [
-                { key: 'journalNumber', label: 'Number' },
-                { key: 'description', label: 'Description' },
-                { key: 'journalDate', label: 'Date' },
-                { key: 'status', label: 'Status' },
-                { key: 'totalDebit', label: 'Amount' },
-              ], 'All journal entries')
+            import('@/lib/export-utils').then(async ({ exportToExcel, exportToPdf }) => {
+              try {
+                exportToExcel(`journals-${Date.now()}`, journals as unknown as Array<Record<string, unknown>>, [
+                  { key: 'journalNumber', label: 'Journal Number' },
+                  { key: 'description', label: 'Description' },
+                  { key: 'journalDate', label: 'Date' },
+                  { key: 'status', label: 'Status' },
+                  { key: 'totalDebit', label: 'Debit (cents)' },
+                  { key: 'reference', label: 'Reference' },
+                  { key: 'source', label: 'Source' },
+                ])
+                await exportToPdf(`journals-${Date.now()}`, 'Journal Register', journals as unknown as Array<Record<string, unknown>>, [
+                  { key: 'journalNumber', label: 'Number' },
+                  { key: 'description', label: 'Description' },
+                  { key: 'journalDate', label: 'Date' },
+                  { key: 'status', label: 'Status' },
+                  { key: 'totalDebit', label: 'Amount' },
+                ], 'All journal entries')
+              } catch (e) {
+                console.error('Export failed:', e)
+              }
             })
           }}>
             <Download className="mr-1.5 h-3.5 w-3.5" />

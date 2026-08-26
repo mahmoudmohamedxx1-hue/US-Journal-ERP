@@ -91,8 +91,8 @@ export function InventoryView() {
         { key: 'description', label: 'Description', type: 'text', placeholder: 'Aluminum adjustable laptop stand' },
         { key: 'category', label: 'Category', type: 'text', placeholder: 'Electronics' },
         { key: 'unit', label: 'Unit', type: 'select', options: [{ value: 'each', label: 'Each' }, { value: 'kg', label: 'Kilogram' }, { value: 'liter', label: 'Liter' }, { value: 'hour', label: 'Hour' }, { value: 'box', label: 'Box' }], defaultValue: 'each' },
-        { key: 'costPrice', label: 'Cost Price (USD)', type: 'number', placeholder: '25.00', helpText: 'Enter amount in dollars' },
-        { key: 'salePrice', label: 'Sale Price (USD)', type: 'number', placeholder: '49.99', helpText: 'Enter amount in dollars' },
+        { key: 'costPrice', label: 'Cost Price (EGP)', type: 'number', placeholder: '25.00', helpText: 'Enter amount in EGP' },
+        { key: 'salePrice', label: 'Sale Price (EGP)', type: 'number', placeholder: '49.99', helpText: 'Enter amount in EGP' },
         { key: 'stockQuantity', label: 'Initial Stock Quantity', type: 'number', placeholder: '100' },
         { key: 'reorderPoint', label: 'Reorder Point', type: 'number', placeholder: '10', helpText: 'Alert when stock drops to this level' },
       ]} />

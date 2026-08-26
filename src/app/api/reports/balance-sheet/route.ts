@@ -52,8 +52,13 @@ export async function GET(req: NextRequest) {
       const net = b.debit - b.credit
       const amount = a.normalBalance === 'Debit' ? net : -net
       if (Math.abs(amount) < 0.005) continue
-      items.push({ code: a.code, name: a.name, amount })
-      total += amount
+      // Contra-assets (e.g. Accumulated Depreciation) are deducted from gross.
+      // Detect via name pattern and flip the sign so the BS shows them as a reduction.
+      const lowerName = a.name.toLowerCase()
+      const isContraAsset = lowerName.includes('accumulated depreciation') || lowerName.includes('accum dep') || lowerName.includes('accumdep')
+      const displayAmount = isContraAsset ? -Math.abs(amount) : amount
+      items.push({ code: a.code, name: a.name, amount: displayAmount })
+      total += displayAmount
     }
     return { label: headerLabel, items, total }
   }
@@ -103,8 +108,8 @@ export async function GET(req: NextRequest) {
   for (const a of accounts) {
     const b = bal[a.id] || { debit: 0, credit: 0 }
     const net = b.debit - b.credit
-    if (a.accountType === 'Revenue') netIncome += -net // credit increases revenue
-    else if (a.accountType === 'Expense') netIncome += net // debit increases expense
+    if (a.accountType === 'Revenue') netIncome += -net // credit increases revenue (positive)
+    else if (a.accountType === 'Expense') netIncome -= net // expenses REDUCE net income (debits are positive expenses, so subtract)
   }
 
   const totalEquity = equity.total + netIncome
