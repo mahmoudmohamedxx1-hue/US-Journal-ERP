@@ -550,3 +550,70 @@ Stage Summary:
 - Fixed the root cause of revenue inconsistency: all reports now use the same computeAccountBalances() and computeFinancialSummary() functions
 - Fixed getSystemContext() race condition that created duplicate organizations
 - All financial reports now reconcile with each other perfectly
+
+---
+Task ID: odoo-integrations
+Agent: main
+Task: Integrate patterns from Odoo's account module — tax computation, payment allocation, reconciliation auto-match, payment terms, partner model
+
+Work Log:
+- Cloned Odoo repository and studied key modules:
+  - account/models/account_tax.py — tax computation engine (compute_all method)
+  - account/models/account_payment.py — payment model with allocation support
+  - account/wizard/account_payment_register.py — payment registration wizard
+  - account/models/account_reconcile_model.py — auto-reconciliation rules
+  - account/models/account_payment_term.py — payment terms with multiple due date lines
+  - odoo/addons/base/models/res_partner.py — unified partner model with parent/child, contact types
+
+- Created 5 new integration modules:
+
+1. src/lib/tax-engine.ts — Odoo's compute_all pattern
+   - Supports: percent, fixed, group, division (price-included) tax types
+   - computeTaxes(priceUnit, quantity, taxCodes, opts) → returns total_excluded, total_included, taxes array
+   - generateTaxJournalLines() — creates journal lines for tax amounts
+   - API: POST /api/taxes/compute
+   - Tested: $200 purchase with 8% VAT + other tax → $226 total included
+
+2. src/app/api/payments/register/route.ts — Odoo's payment_register wizard
+   - GET: returns open invoices/bills for a party (checklist for selection)
+   - POST: registers payment with auto-allocation (oldest-first if no allocations provided)
+   - Updates: payment record, allocation records, invoice/bill status, customer/vendor balance, bank account balance, bank transaction
+   - Tested: $8,900 payment → auto-allocated to INV-2026-035 → invoice marked Paid
+
+3. src/app/api/reconciliation/auto-match/route.ts — Odoo's reconcile_model
+   - POST: auto-matches bank transactions to open invoices/bills
+   - Match criteria: exact amount (high confidence), amount + reference match (high), amount within 1% tolerance (low)
+   - PUT: applies suggested matches (marks bank txns as reconciled, updates invoice/bill status)
+   - Tested: matched $8,900 bank transaction to BILL-V004
+
+4. src/lib/payment-terms.ts — Odoo's account_payment_term with multiple lines
+   - calculateDueDates(invoiceDate, totalAmount, paymentTerm) → array of { date, amount, percentage, label }
+   - Supports: percent, fixed, balance line types
+   - 8 presets: Immediate, Net 15/30/45/60, 30/70 split, 50/50 split, Due on Receipt
+   - parsePaymentTermString() — parses "Net 30" etc. into PaymentTerm object
+   - API: POST /api/payment-terms/calculate, GET /api/payment-terms/calculate (presets)
+   - Tested: $10,000 invoice with "30% Immediate, 70% in 30 days" → 2 due dates ($3,000 today + $7,000 in 30 days)
+
+5. src/lib/partner.ts — Odoo's res_partner unified model
+   - getChildContacts() — returns customers + vendors for an org
+   - searchPartners() — multi-field search (name, number, email, phone, contactName)
+   - getPartnerStats() — returns balance, outstanding, overdue, open counts
+   - API: GET /api/partners/stats?role=customer&partyId=xxx
+   - Tested: Proseware Ltd. shows 0 outstanding (paid), Contoso shows $47,800 overdue
+
+- Verified all financial reports still show identical numbers after integrations:
+  - Dashboard Revenue: $136,440.32 ✓
+  - Income Statement Revenue: $136,440.32 ✓
+  - Balance Sheet Net Income: -$25,259.68 ✓
+  - Cash Flow Net Income: -$25,259.68 ✓
+  - Balance Sheet: Balanced ✓
+
+Stage Summary:
+- 5 new Odoo-inspired modules created
+- 4 new API endpoints added
+- Tax computation engine supports percent/fixed/group/division
+- Payment register wizard auto-allocates payments to invoices
+- Reconciliation auto-match matches bank transactions to documents
+- Payment terms support multi-line due dates (e.g., 30%/70% split)
+- Partner model provides unified search and stats
+- All reports remain consistent after integrations
