@@ -53,7 +53,16 @@ export async function GET(req: NextRequest) {
     return lines
   }
 
-  const revenue = buildLines(['Revenue'])
+  // Operating revenue = all revenue EXCEPT "Other Income" subType (which goes below)
+  const operatingRevenueAccounts = accounts.filter(a =>
+    a.accountType === 'Revenue' && a.subType !== 'Header' && a.subType !== 'Other Income'
+  )
+  const revenue = operatingRevenueAccounts.map((a) => {
+    const b = bal[a.id] || { debit: 0, credit: 0 }
+    const net = b.debit - b.credit
+    const amount = a.normalBalance === 'Debit' ? net : -net
+    return { code: a.code, name: a.name, amount }
+  }).filter((r) => Math.abs(r.amount) >= 0.005)
   const totalRevenue = revenue.reduce((s, r) => s + r.amount, 0)
 
   const cogs = buildLines(['Expense'], ['COGS'])

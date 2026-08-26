@@ -1,0 +1,105 @@
+# US Journal ERP — Installer Files
+
+You have three options to install US Journal ERP. Pick the one matching your operating system.
+
+=========================================================================
+OPTION 1 — Windows Portable ZIP (recommended for Windows users)
+=========================================================================
+
+File: USJournalERP-Windows-Portable.zip (400 MB)
+
+How to use:
+  1. Download the ZIP file
+  2. Right-click → "Extract All…" → choose a folder (Desktop, C:\, etc.)
+  3. Open the extracted folder
+  4. Double-click "Start US Journal ERP.bat"
+  5. The app window opens — wait ~5 seconds for the server to start
+  6. The login screen appears
+
+NOTE: On first run, the database is EMPTY (no users, no accounts). To seed
+demo data, run on a machine with Node.js installed:
+  - Open Command Prompt in the extracted folder
+  - Run: cd resources\app && node seed-runner.js
+
+=========================================================================
+OPTION 2 — Linux AppImage (recommended for Linux users)
+=========================================================================
+
+File: USJournalERP-1.0.0.AppImage (218 MB)
+
+How to use:
+  1. Download the .AppImage file
+  2. Right-click → Properties → Permissions → check "Allow executing file as program"
+     Or in terminal: chmod +x USJournalERP-1.0.0.AppImage
+  3. Double-click to run, OR in terminal: ./USJournalERP-1.0.0.AppImage
+  4. The app window opens — wait ~5 seconds for the server to start
+  5. The login screen appears
+
+The AppImage is a single-file portable app — no installation needed.
+Data is stored at: ~/.config/us-journal-erp/data/us-journal-erp.db
+
+=========================================================================
+OPTION 3 — Linux tar.gz (portable folder)
+=========================================================================
+
+File: USJournalERP-1.0.0-x64.tar.gz (26 MB)
+
+This is the same as the AppImage but unpacked. Useful if you want to inspect
+the contents or run on a system that doesn't support AppImage.
+
+How to use:
+  1. Extract: tar -xzf USJournalERP-1.0.0-x64.tar.gz
+  2. cd linux-unpacked
+  3. ./us-journal-erp
+  4. The app window opens
+
+=========================================================================
+DEMO LOGIN CREDENTIALS (after seeding)
+=========================================================================
+
+| Role          | Email                         | Password         |
+|---------------|-------------------------------|------------------|
+| Administrator | admin@usjournal.test          | Admin@2026       |
+| Controller    | controller@usjournal.test    | Control@2026     |
+| Approver      | approver@usjournal.test       | Approve@2026     |
+| Accountant    | accountant@usjournal.test     | Accounts@2026    |
+| Auditor       | auditor@usjournal.test        | Audit@2026       |
+| Viewer        | viewer@usjournal.test         | View@2026        |
+
+CHANGE THESE PASSWORDS in production via Users & Roles screen.
+
+=========================================================================
+TROUBLESHOOTING
+=========================================================================
+
+App doesn't open:
+  - Wait 10 seconds — the Next.js server takes a moment to start
+  - Check Task Manager (Windows) or System Monitor (Linux) for the process
+  - Try running the .exe or AppImage from a terminal to see error messages
+
+Login fails:
+  - The database may not be seeded yet. See "after seeding" note above.
+  - Default credentials only work if the seed script has been run.
+
+Port 3000 already in use:
+  - The Electron app uses port 3000 internally. Close any other app using that port.
+  - Or modify PORT in resources/app/electron/dist/main.js
+
+Database reset:
+  - Windows: delete %APPDATA%/us-journal-erp/ folder
+  - Linux: delete ~/.config/us-journal-erp/ folder
+  - Restart the app — a fresh empty database will be created
+
+=========================================================================
+BUILD FROM SOURCE
+=========================================================================
+
+For full source code, build scripts, and customization:
+See BUILD.md in the source repository.
+
+Build commands (require Node.js 20+ and Bun):
+  - Windows installer: bun run dist:win
+  - macOS DMG: bun run dist:mac
+  - Linux AppImage: bun run dist:linux
+
+=========================================================================
