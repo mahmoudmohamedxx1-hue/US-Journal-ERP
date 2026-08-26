@@ -210,3 +210,75 @@ export function parsePaymentTermString(terms: string): PaymentTerm {
   // Default: Net 30
   return PAYMENT_TERM_PRESETS[2]
 }
+
+// ---------------------------------------------------------------------------
+// Early Payment Discounts (Odoo's discount pattern)
+// ---------------------------------------------------------------------------
+
+export interface EarlyPaymentDiscount {
+  discountDays: number    // pay within N days to get discount
+  discountPercent: number // e.g., 2 = 2% discount
+}
+
+export interface PaymentTermWithDiscount extends PaymentTerm {
+  earlyDiscount?: EarlyPaymentDiscount | null
+}
+
+/**
+ * Calculate early payment discount.
+ *
+ * Odoo pattern: "2/10 Net 30" means:
+ *   - 2% discount if paid within 10 days
+ *   - Otherwise, full amount due in 30 days
+ *
+ * @param invoiceDate - date of invoice
+ * @param totalAmount - total in cents
+ * @param paymentDate - date payment is made
+ * @param discount - { discountDays, discountPercent }
+ * @returns { discountAmount, netAmount, isEligible, daysEarly }
+ */
+export function calculateEarlyPaymentDiscount(
+  invoiceDate: Date,
+  totalAmount: number,
+  paymentDate: Date,
+  discount: EarlyPaymentDiscount,
+): {
+  discountAmount: number
+  netAmount: number
+  isEligible: boolean
+  daysEarly: number
+} {
+  const discountDeadline = new Date(invoiceDate)
+  discountDeadline.setDate(discountDeadline.getDate() + discount.discountDays)
+
+  const daysEarly = Math.floor((discountDeadline.getTime() - paymentDate.getTime()) / 86400000)
+  const isEligible = paymentDate <= discountDeadline
+
+  if (isEligible) {
+    const discountAmount = Math.round(totalAmount * (discount.discountPercent / 100))
+    return {
+      discountAmount,
+      netAmount: totalAmount - discountAmount,
+      isEligible: true,
+      daysEarly,
+    }
+  }
+
+  return {
+    discountAmount: 0,
+    netAmount: totalAmount,
+    isEligible: false,
+    daysEarly,
+  }
+}
+
+/**
+ * Common early payment discount presets (like Odoo's default data).
+ */
+export const EARLY_PAYMENT_DISCOUNT_PRESETS: Array<{ id: string; name: string; discount: EarlyPaymentDiscount }> = [
+  { id: '2_10', name: '2/10 Net 30 (2% discount if paid in 10 days)', discount: { discountDays: 10, discountPercent: 2 } },
+  { id: '1_10', name: '1/10 Net 30 (1% discount if paid in 10 days)', discount: { discountDays: 10, discountPercent: 1 } },
+  { id: '1_15', name: '1/15 Net 30 (1% discount if paid in 15 days)', discount: { discountDays: 15, discountPercent: 1 } },
+  { id: '3_10', name: '3/10 Net 30 (3% discount if paid in 10 days)', discount: { discountDays: 10, discountPercent: 3 } },
+  { id: '2_15', name: '2/15 Net 45 (2% discount if paid in 15 days)', discount: { discountDays: 15, discountPercent: 2 } },
+]

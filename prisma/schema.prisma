@@ -21,6 +21,12 @@ model Organization {
   taxId       String?
   currency    String   @default("USD")
   baseCurrency String  @default("USD")
+  // Odoo lock dates — prevent posting before a certain date
+  fiscalYearLockDate  DateTime?  // Global lock — no entries before this date
+  taxLockDate         DateTime?  // Tax return lock — no tax entries before this date
+  saleLockDate        DateTime?  // Sales lock — no sales entries before this date
+  purchaseLockDate    DateTime?  // Purchase lock — no purchase entries before this date
+  hardLockDate        DateTime?  // Hard lock — irreversible, no exceptions
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -200,6 +206,7 @@ model Journal {
   approvedAt      DateTime?
   postedAt        DateTime?
   rejectionReason String?
+  inalterableHash String?  // SHA-256 hash chain (Odoo's inalterable_hash pattern)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
