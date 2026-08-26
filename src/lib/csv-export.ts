@@ -13,6 +13,18 @@ function escapeCsv(value: unknown): string {
   return str
 }
 
+/** Resolve dotted paths like "customer.name" → row.customer.name */
+function getNestedValue(row: Record<string, unknown>, key: string): unknown {
+  if (!key.includes('.')) return row[key]
+  const parts = key.split('.')
+  let val: unknown = row
+  for (const p of parts) {
+    if (val == null) return null
+    val = (val as Record<string, unknown>)[p]
+  }
+  return val
+}
+
 /** Export data as CSV file download */
 export function exportToCsv(filename: string, rows: Array<Record<string, unknown>>, columns?: Array<{ key: string; label: string }>) {
   if (rows.length === 0) {
@@ -30,7 +42,7 @@ export function exportToCsv(filename: string, rows: Array<Record<string, unknown
   // Build CSV
   const headerLine = cols.map((c) => escapeCsv(c.label)).join(',')
   const dataLines = rows.map((row) =>
-    cols.map((c) => escapeCsv(row[c.key])).join(',')
+    cols.map((c) => escapeCsv(getNestedValue(row, c.key))).join(',')
   )
   const csv = [headerLine, ...dataLines].join('\n')
 

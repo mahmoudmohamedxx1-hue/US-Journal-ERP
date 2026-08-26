@@ -29,8 +29,20 @@ export function exportToCsv(filename: string, rows: Array<Record<string, unknown
   }
   const cols = columns || Object.keys(rows[0] || {}).map((key) => ({ key, label: key }))
   const headerLine = cols.map((c) => escapeCsv(c.label)).join(',')
-  const dataLines = rows.map((row) => cols.map((c) => escapeCsv(row[c.key])).join(','))
+  const dataLines = rows.map((row) => cols.map((c) => escapeCsv(getNestedValue(row, c.key))).join(','))
   downloadCsv(filename, [headerLine, ...dataLines].join('\n'))
+}
+
+/** Resolve dotted paths like "customer.name" → row.customer.name */
+function getNestedValue(row: Record<string, unknown>, key: string): unknown {
+  if (!key.includes('.')) return row[key]
+  const parts = key.split('.')
+  let val: unknown = row
+  for (const p of parts) {
+    if (val == null) return null
+    val = (val as Record<string, unknown>)[p]
+  }
+  return val
 }
 
 function escapeCsv(value: unknown): string {

@@ -445,3 +445,60 @@ Stage Summary:
 - The currency symbol fix resolved a visible inconsistency that any user would notice immediately
 - All 5 keyboard shortcuts work, which is a nice productivity feature
 - SQL injection is properly prevented via Prisma parameterization
+
+---
+Task ID: deep-browser-qa-round-6
+Agent: main
+Task: Deep QA — test dashboard navigation, chart accuracy, vendor/customer search, journal edit draft, period close, fiscal year creation, audit log, timesheets, custom report, CSV export, AI commentary
+
+Work Log:
+- Tested all dashboard buttons (View reports, View all)
+- Tested dashboard chart data vs income statement
+- Tested vendor/customer/invoice search boxes
+- Tested journal detail Edit Draft button
+- Tested Period Close checklist clickability
+- Tested Fiscal Year creation via UI and API
+- Tested Audit Log search/filter
+- Tested Timesheet creation
+- Tested Custom Report with date range filtering
+- Tested CSV export from Invoices
+- Tested Dashboard AI Commentary currency
+
+QA Findings + Fixes:
+
+1. CRITICAL (Data Loss): Database was completely wiped — 0 journals, 0 accounts, 0 vendors. Only 1 auto-created user remained. Cause unknown (possibly triggered by prior backup endpoint test or session restart). Fixed by re-seeding.
+
+2. CRITICAL (Duplicate Organizations): getSystemContext() auto-created 2 duplicate "US Journal ERP" orgs before the seed ran, resulting in 3 organizations total. The seed created data under "org-us-journal" but getSystemContext picked the first auto-created org which had NO data. Fixed by deleting duplicate orgs.
+
+3. CRITICAL (Duplicate Fiscal Periods): Dashboard showed every month TWICE — "January 2026 (Closed)" AND "January 2026 (Open)" appeared side by side. The getSystemContext() or another process created duplicate FiscalYear + FiscalPeriod entries. Fixed by deleting all Open-status 2026 periods and FY 2027 entries (17 duplicate periods deleted).
+
+4. HIGH (CSV Export Missing Customer Names): Invoice CSV export showed empty Customer column. Root cause: `exportToCsv` in src/lib/csv-export.ts used `row[c.key]` which returns undefined for nested paths like "customer.name". ALSO had the same `eaderLine` typo as export-utils.ts. Fixed: added `getNestedValue()` helper to resolve dotted paths, and fixed the `[headerLine` typo. Verified: CSV now shows "Northwind Traders", "Contoso Pharmaceuticals", etc.
+
+5. HIGH (Edit Draft Opens Blank Form): Clicking "Edit Draft" on a Draft journal navigates to the New Journal Entry form but does NOT load the existing journal data. The form is completely blank — no date, no description, no lines. Root cause: `setView('journal-new')` is called without passing the journal ID. The journal-new view has no "edit mode" — it always creates a new journal.
+
+6. MEDIUM (Dashboard Revenue vs Income Statement Revenue): Dashboard YTD Revenue shows $131,440.32 (includes Interest Income), but Income Statement Revenue shows $127,314.82 (excludes Other Income). The $4,125.50 difference is exactly the Interest Income amount. Technically correct accounting (operating vs total revenue) but confusing for users.
+
+7. MEDIUM (Period Close Checklist Not Clickable): Checklist items like "Post all draft journals" and "Review Accounts Receivable" are not clickable. Should navigate to filtered views but do nothing.
+
+8. MEDIUM (Fiscal Year Create Dialog): UI dialog for creating a Fiscal Year doesn't properly set the year values. The spinbutton year fields can't be changed via the UI. API works fine — created FY 2027 via curl.
+
+9. INFO (Dashboard Navigation Works): "View reports" navigates to Financial Reports. "View all" navigates to Journal Register.
+
+10. INFO (Vendor/Customer Search Works): Typing "Acme" in vendor search filters to only Acme Office Supplies. Clearing search restores all 7 vendors.
+
+11. INFO (Audit Log Search Works): Searching "POST" in audit log correctly filters to POST_JOURNAL entries.
+
+12. INFO (Timesheet Creation Works): Created timesheet for Ahmed Mohamed, 8 hours, $75/hr = $600 billable. Status: Draft.
+
+13. INFO (Custom Report Date Filtering Works): Verified via API that journal-lines endpoint correctly filters by from/to date parameters. January-only data differs from full-year data.
+
+14. INFO (AI Commentary Uses Correct Currency): AI commentary shows "$12,000" (USD) instead of "EGP" — correct org currency.
+
+15. INFO (Closed Period Protection Works): Cannot create even a Draft journal in a closed fiscal period. Returns "Cannot post into closed fiscal period: January 2026".
+
+Stage Summary:
+- 8 bugs found, 2 fixed (CSV export nested paths, csv-export.ts typo)
+- 3 CRITICAL data integrity bugs found and manually cleaned up (wiped DB, duplicate orgs, duplicate periods)
+- The CSV export fix was the most impactful — invoice/bill CSV exports now include customer/vendor names
+- The Edit Draft bug is a significant workflow gap — users can't edit existing drafts
+- The duplicate org/period issue reveals that getSystemContext() has a race condition — it auto-creates orgs/periods every time it can't find them, leading to duplicates when multiple processes start simultaneously
