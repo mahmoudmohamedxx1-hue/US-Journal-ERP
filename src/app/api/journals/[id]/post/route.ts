@@ -39,6 +39,9 @@ export async function POST(
   }
 
   // Atomic post — transaction ensures GL state stays consistent
+  // Also computes and stores the inalterable hash (Odoo's hash_integrity)
+  const { computeAndStoreJournalHash } = await import('@/lib/invoice-autopost')
+
   await db.$transaction(async (tx) => {
     await tx.journal.update({
       where: { id },
@@ -54,6 +57,9 @@ export async function POST(
     await tx.journalApproval.create({
       data: { journalId: id, action: 'Posted', byUserId: ctx.userId },
     })
+
+    // Compute and store hash — makes the journal entry tamper-proof
+    await computeAndStoreJournalHash(tx, id, ctx.organizationId)
   })
 
   await logAudit({

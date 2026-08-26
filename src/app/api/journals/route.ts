@@ -128,6 +128,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Odoo-inspired lock date validation (5 levels: hard, fiscalyear, tax, sale, purchase)
+  const { getViolatedLockDates } = await import('@/lib/reliability')
+  const lockViolations = await getViolatedLockDates(ctx.organizationId, jd, {
+    hasTax: normalizedLines.some(l => l.taxCodeId),
+    journalType: source || 'general',
+  })
+  if (lockViolations.length > 0) {
+    const hardViolation = lockViolations.find(v => v.severity === 'hard')
+    if (hardViolation) {
+      return err(hardViolation.message, 422)
+    }
+    // Soft lock dates — only block if submitting (not saving as draft)
+    if (submit) {
+      return err(lockViolations[0].message, 422)
+    }
+  }
+
   const status = submit ? 'Submitted' : 'Draft'
 
   // === Atomic journal creation ===
