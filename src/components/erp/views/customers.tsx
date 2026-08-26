@@ -103,7 +103,7 @@ export function CustomersView() {
             { value: 'Net 45', label: 'Net 45' },
             { value: 'Net 60', label: 'Net 60' },
           ], defaultValue: 'Net 30' },
-          { key: 'creditLimit', label: 'Credit Limit (EGP)', type: 'number', placeholder: '50000', helpText: 'Enter amount in EGP (e.g. 50000)' },
+          { key: 'creditLimit', label: 'Credit Limit (USD)', type: 'number', placeholder: '50000', helpText: 'Enter amount in USD (e.g. 50000)' },
           { key: 'currency', label: 'Currency', type: 'select', options: [
             { value: 'EGP', label: 'EGP — Egyptian Pound' },
             { value: 'USD', label: 'USD — US Dollar' },

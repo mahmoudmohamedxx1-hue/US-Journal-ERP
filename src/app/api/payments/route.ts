@@ -111,6 +111,19 @@ export async function POST(req: NextRequest) {
         data: { balance: { increment: balanceChange } },
       })
 
+      // Create a bank transaction record so it shows in the banking page
+      await tx.bankTransaction.create({
+        data: {
+          bankAccountId: bankAccountId,
+          date: new Date(paymentDate),
+          amount: amountCents,
+          type: paymentType === 'RECEIPT' ? 'Credit' : 'Debit',
+          description: notes || `${paymentType} ${paymentNumber}`,
+          reference: reference || paymentNumber,
+          reconciled: false,
+        },
+      })
+
       return p
     })
 

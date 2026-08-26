@@ -13,7 +13,7 @@ interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 }
 
 export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ value, onValueChange, onChange, align = 'right', className, currency = 'EGP', ...rest }, ref) => {
+  ({ value, onValueChange, onChange, align = 'right', className, currency = 'USD', ...rest }, ref) => {
     const displayValue =
       value === null || value === undefined || value === ''
         ? ''

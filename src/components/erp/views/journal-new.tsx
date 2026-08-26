@@ -359,11 +359,13 @@ export function JournalNewView() {
                       value={l.debit}
                       onValueChange={(v) => updateLine(l.id, { debit: v, credit: v > 0 ? 0 : l.credit })}
                       className="h-8"
+                      currency="USD"
                     />
                     <CurrencyInput
                       value={l.credit}
                       onValueChange={(v) => updateLine(l.id, { credit: v, debit: v > 0 ? 0 : l.debit })}
                       className="h-8"
+                      currency="USD"
                     />
                     <div className="flex items-center gap-0.5">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => duplicateLine(l.id)} title="Duplicate line">

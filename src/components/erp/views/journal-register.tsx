@@ -124,7 +124,15 @@ export function JournalRegisterView() {
       })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || `Failed to ${action}`)
-      toast.success(`Journal ${action}ed successfully`)
+      // Use proper past-tense form per action
+      const pastTense: Record<string, string> = {
+        submit: 'submitted',
+        approve: 'approved',
+        reject: 'rejected',
+        post: 'posted',
+        reverse: 'reversed',
+      }
+      toast.success(`Journal ${pastTense[action] || action + 'ed'} successfully`)
       load()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : `Failed to ${action}`)
@@ -149,7 +157,12 @@ export function JournalRegisterView() {
       }
     }
     setActionLoading((s) => ({ ...s, [`bulk-${action}`]: false }))
-    if (okCount > 0) toast.success(`${okCount} journal${okCount > 1 ? 's' : ''} ${action}ed`)
+    const pastTense: Record<string, string> = {
+      submit: 'submitted',
+      approve: 'approved',
+      post: 'posted',
+    }
+    if (okCount > 0) toast.success(`${okCount} journal${okCount > 1 ? 's' : ''} ${pastTense[action] || action + 'ed'}`)
     if (failCount > 0) toast.error(`${failCount} failed`)
     load()
   }

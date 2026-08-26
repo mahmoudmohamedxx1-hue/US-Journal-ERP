@@ -144,7 +144,7 @@ export function BillsView() {
           { key: 'vendorId', label: 'Vendor', type: 'select', required: true, options: vendors.map((v) => ({ value: v.id, label: v.name })) },
           { key: 'billDate', label: 'Bill Date', type: 'date', required: true, defaultValue: new Date().toISOString().slice(0, 10) },
           { key: 'dueDate', label: 'Due Date', type: 'date', required: true, defaultValue: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) },
-          { key: 'amount', label: 'Amount (EGP)', type: 'number', required: true, placeholder: '3000', helpText: 'Enter amount in EGP' },
+          { key: 'amount', label: 'Amount (USD)', type: 'number', required: true, placeholder: '3000', helpText: 'Enter amount in USD' },
           { key: 'description', label: 'Description', type: 'text', placeholder: 'Office supplies — August' },
         ]}
       />

@@ -74,7 +74,7 @@ export function PayrollView() {
         {key:'phone',label:'Phone',type:'text',placeholder:'+20 100 123 4567'},
         {key:'position',label:'Position',type:'text',placeholder:'Senior Accountant'},
         {key:'hireDate',label:'Hire Date',type:'date',required:true,defaultValue:new Date().toISOString().slice(0,10)},
-        {key:'basicSalary',label:'Basic Salary (monthly)',type:'number',required:true,placeholder:'15000',helpText:'In base currency (EGP)'},
+        {key:'basicSalary',label:'Basic Salary (monthly)',type:'number',required:true,placeholder:'15000',helpText:'In base currency (USD)'},
         {key:'allowances',label:'Allowances (monthly)',type:'number',placeholder:'2000'},
         {key:'deductions',label:'Deductions (monthly)',type:'number',placeholder:'500'},
         {key:'socialInsurance',label:'Social Insurance',type:'number',placeholder:'1000'},

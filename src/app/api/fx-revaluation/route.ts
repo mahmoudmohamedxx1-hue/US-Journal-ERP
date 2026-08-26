@@ -13,7 +13,13 @@ export async function POST(req: NextRequest) {
 
     if (!revaluationDate) return err('revaluationDate is required', 422, undefined, 'VALIDATION_ERROR')
     const revDate = new Date(revaluationDate)
-    const baseCurrency = targetCurrency || 'EGP'
+
+    // Fetch org's base currency (fallback to USD if not set)
+    const org = await db.organization.findUnique({
+      where: { id: ctx.organizationId },
+      select: { baseCurrency: true, currency: true },
+    })
+    const baseCurrency = targetCurrency || org?.baseCurrency || org?.currency || 'USD'
 
     // Get all foreign-currency invoices (not EGP)
     const invoices = await db.invoice.findMany({
