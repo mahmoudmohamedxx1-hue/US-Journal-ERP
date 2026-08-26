@@ -18,6 +18,7 @@ import { formatDollars } from '@/lib/format'
 import { CurrencyInput } from '@/components/erp/currency-input'
 import { AccountCombobox, type AccountOption } from '@/components/erp/account-combobox'
 import { BalanceIndicator } from '@/components/erp/balance-indicator'
+import { AIJournalPanel, type AIParsedJournal } from '@/components/erp/ai-journal-panel'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,6 +90,85 @@ export function JournalNewView() {
       next.splice(idx + 1, 0, copy)
       return next
     })
+  }
+
+  const handleApplyAI = (parsed: AIParsedJournal) => {
+    // Find matching account IDs from the available list
+    // Strategy: prefer exact code → exact name → name contains target → target contains FULL name (not just first word)
+    const findAccount = (codeOrName: string): string => {
+      if (!codeOrName) return ''
+      const target = codeOrName.toLowerCase().trim()
+      // Try exact code match
+      let match = accounts.find(a => a.code.toLowerCase() === target)
+      if (match) return match.id
+      // Try code prefix match (only if target looks like a number)
+      if (/^\d/.test(target)) {
+        match = accounts.find(a => a.code.toLowerCase().startsWith(target))
+        if (match) return match.id
+      }
+      // Try exact name match (case-insensitive)
+      match = accounts.find(a => a.name.toLowerCase() === target)
+      if (match) return match.id
+      // Try name contains target (entire target string)
+      match = accounts.find(a => a.name.toLowerCase().includes(target))
+      if (match) return match.id
+      // Try target contains FULL account name (more strict than just first word)
+      match = accounts.find(a => a.name.toLowerCase().split(/\s+/).every(word => target.includes(word)))
+      if (match) return match.id
+      // For payment-method keywords, prefer cash/bank accounts
+      const paymentKeywords = ['cash', 'visa', 'bank', 'checking', 'operating bank', 'savings', 'credit card', 'debit card']
+      const isPaymentMethod = paymentKeywords.some(kw => target.includes(kw))
+      if (isPaymentMethod) {
+        // Look for Asset accounts with cash/bank-like names
+        match = accounts.find(a => {
+          const name = a.name.toLowerCase()
+          const subType = (a as { subType?: string }).subType?.toLowerCase() || ''
+          return (name.includes('cash') || name.includes('bank') || name.includes('checking') || subType === 'current asset')
+            && !name.includes('receivable')
+        })
+        if (match) return match.id
+      }
+      return ''
+    }
+
+    const debitId = findAccount(parsed.debitAccount)
+    const creditId = findAccount(parsed.creditAccount)
+    const amountInCents = Math.round((parsed.amount || 0) * 100)
+
+    const newLines: JournalLineDraft[] = []
+    if (debitId) {
+      newLines.push({
+        id: newLineId(),
+        accountId: debitId,
+        description: parsed.description,
+        debit: parsed.amount || 0,
+        credit: 0,
+      })
+    }
+    if (creditId) {
+      newLines.push({
+        id: newLineId(),
+        accountId: creditId,
+        description: parsed.description,
+        debit: 0,
+        credit: parsed.amount || 0,
+      })
+    }
+    // If neither matched, keep existing lines
+    if (newLines.length > 0) {
+      setLines(newLines.length >= 2 ? newLines : [
+        ...newLines,
+        { id: newLineId(), accountId: '', description: '', debit: 0, credit: 0 },
+      ])
+    }
+    if (parsed.reference) setReference(parsed.reference)
+    if (parsed.date) setJournalDate(parsed.date)
+    if (parsed.description) setDescription(parsed.description)
+    if (!debitId || !creditId) {
+      toast.warning(`AI couldn't match ${!debitId ? `debit "${parsed.debitAccount}"` : ''} ${!creditId ? `credit "${parsed.creditAccount}"` : ''} — pick manually`)
+    } else {
+      toast.success('Journal pre-filled — review and submit')
+    }
   }
 
   const handleSave = async (submit: boolean) => {
@@ -318,6 +398,8 @@ export function JournalNewView() {
 
         {/* Sidebar: balance + actions */}
         <div className="space-y-4">
+          <AIJournalPanel onApply={handleApplyAI} />
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Balance Check</CardTitle>

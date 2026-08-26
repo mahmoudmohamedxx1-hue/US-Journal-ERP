@@ -65,8 +65,17 @@ export async function POST(req: NextRequest) {
           const depAccount = await tx.account.findFirst({
             where: { organizationId: ctx.organizationId, code: '6800' },
           })
+          // BUG FIX: must specifically match "Accumulated Depreciation" (1241) or a name match,
+          // NOT just any account starting with "12" (which matches 1200 Fixed Assets!)
           const accumDepAccount = await tx.account.findFirst({
-            where: { organizationId: ctx.organizationId, code: { startsWith: '12' } },
+            where: {
+              organizationId: ctx.organizationId,
+              OR: [
+                { code: '1241' },
+                { name: { contains: 'Accum' } },
+                { name: { contains: 'Accumulated' } },
+              ],
+            },
           })
 
           if (depAccount && accumDepAccount) {

@@ -14,8 +14,10 @@ const ROLE_META: Record<string, { color: string; bg: string; description: string
   Accountant:   { color: 'text-blue-700',    bg: 'bg-blue-50',    description: 'Create and edit draft journals' },
   Approver:     { color: 'text-amber-700',   bg: 'bg-amber-50',   description: 'Review, approve or reject submitted journals' },
   Controller:   { color: 'text-teal-700',    bg: 'bg-teal-50',    description: 'Post approved journals, reverse, close periods' },
-  Administrator: { color: 'text-purple-700',   bg: 'bg-purple-50',   description: 'Manage users, organization, and system settings' },
+  Administrator: { color: 'text-purple-700', bg: 'bg-purple-50',  description: 'Manage users, organization, and system settings' },
   Auditor:      { color: 'text-emerald-700', bg: 'bg-emerald-50', description: 'Read-only access to records and audit logs' },
+  Manager:      { color: 'text-indigo-700',  bg: 'bg-indigo-50',  description: 'Team management and reporting access' },
+  Employee:     { color: 'text-gray-700',    bg: 'bg-gray-50',    description: 'Self-service: timesheets, payslips, expenses' },
 }
 
 export function UsersView() {
@@ -50,7 +52,7 @@ export function UsersView() {
       {/* Role legend */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {ROLES.map((role) => {
-          const meta = ROLE_META[role]
+          const meta = ROLE_META[role] || { color: 'text-gray-700', bg: 'bg-gray-50', description: 'Custom role' }
           return (
             <Card key={role} className="p-3">
               <div className="flex items-start gap-2">

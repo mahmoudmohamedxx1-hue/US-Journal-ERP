@@ -31,6 +31,7 @@ import { useAuth } from '@/app/page'
 import { formatMoney, formatCompact, formatDate, STATUS_META, type JournalStatus } from '@/lib/format'
 import { KpiCard } from '@/components/erp/kpi-card'
 import { StatusBadge } from '@/components/erp/status-badge'
+import { AICommentaryWidget } from '@/components/erp/ai-commentary-widget'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -146,8 +147,8 @@ export function DashboardView() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Cash Balance" value={formatMoney(k.cashBalance)} hint={k.cashBalance > 0 ? 'across bank accounts' : 'no bank accounts yet'} icon={<Wallet className="h-4 w-4" />} variant="accent" />
-        <KpiCard label="YTD Revenue" value={formatMoney(k.ytdRevenue)} hint={k.ytdRevenue > 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingUp className="h-4 w-4" />} variant={k.ytdRevenue > 0 ? 'success' : 'default'} />
-        <KpiCard label="YTD Expenses" value={formatMoney(k.ytdExpenses)} hint={k.ytdExpenses > 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingDown className="h-4 w-4" />} />
+        <KpiCard label="YTD Revenue" value={formatMoney(k.ytdRevenue)} hint={k.ytdRevenue !== 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingUp className="h-4 w-4" />} variant={k.ytdRevenue > 0 ? 'success' : 'default'} />
+        <KpiCard label="YTD Expenses" value={formatMoney(k.ytdExpenses)} hint={k.ytdExpenses !== 0 ? 'posted activity' : 'no posted journals yet'} icon={<TrendingDown className="h-4 w-4" />} />
         <KpiCard label="Net Income" value={formatMoney(k.netIncome)} hint={k.ytdRevenue === 0 && k.ytdExpenses === 0 ? 'no activity yet' : (k.netIncome >= 0 ? 'profit YTD' : 'loss YTD')} icon={<Receipt className="h-4 w-4" />} variant={k.netIncome >= 0 ? 'success' : 'danger'} />
       </div>
 
@@ -157,6 +158,8 @@ export function DashboardView() {
         <KpiCard label="Open AR" value={formatMoney(k.openAR)} hint="unpaid invoices" icon={<Clock className="h-4 w-4" />} />
         <KpiCard label="Unposted Journals" value={String(k.unpostedCount)} hint="awaiting approval" icon={<FileText className="h-4 w-4" />} />
       </div>
+
+      <AICommentaryWidget />
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-2">

@@ -50,18 +50,18 @@ export const ROLES = [
 // ============== Multi-Currency Support ==============
 
 export const SUPPORTED_CURRENCIES = [
-  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'ar-EG' },
+  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'en-US' },
   { code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' },
-  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'de-DE' },
-  { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' },
-  { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼', locale: 'ar-SA' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', locale: 'ar-AE' },
-  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'د.ك', locale: 'ar-KW' },
-  { code: 'QAR', name: 'Qatari Riyal', symbol: '﷼', locale: 'ar-QA' },
-  { code: 'BHD', name: 'Bahraini Dinar', symbol: '.د.ب', locale: 'ar-BH' },
-  { code: 'OMR', name: 'Omani Rial', symbol: '﷼', locale: 'ar-OM' },
-  { code: 'JOD', name: 'Jordanian Dinar', symbol: 'د.ا', locale: 'ar-JO' },
-  { code: 'LBP', name: 'Lebanese Pound', symbol: 'ل.ل', locale: 'ar-LB' },
+  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'en-US' },
+  { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-US' },
+  { code: 'SAR', name: 'Saudi Riyal', symbol: 'SAR', locale: 'en-US' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'AED', locale: 'en-US' },
+  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'KWD', locale: 'en-US' },
+  { code: 'QAR', name: 'Qatari Riyal', symbol: 'QAR', locale: 'en-US' },
+  { code: 'BHD', name: 'Bahraini Dinar', symbol: 'BHD', locale: 'en-US' },
+  { code: 'OMR', name: 'Omani Rial', symbol: 'OMR', locale: 'en-US' },
+  { code: 'JOD', name: 'Jordanian Dinar', symbol: 'JOD', locale: 'en-US' },
+  { code: 'LBP', name: 'Lebanese Pound', symbol: 'LBP', locale: 'en-US' },
 ] as const
 
 export type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number]['code']
@@ -132,7 +132,7 @@ export function centsToDollars(cents: number): number {
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('en-GB', {
+  return d.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -142,7 +142,7 @@ export function formatDate(date: Date | string | null | undefined): string {
 export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleString('en-GB', {
+  return d.toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
