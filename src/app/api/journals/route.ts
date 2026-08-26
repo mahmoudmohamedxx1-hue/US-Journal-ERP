@@ -145,6 +145,39 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Comprehensive server-side validation (Odoo's _check_balanced + _check_complete + _check_currency)
+  const { validateJournal, autoFixRounding } = await import('@/lib/validation-engine')
+  const serverValidation = await validateJournal({
+    organizationId: ctx.organizationId,
+    journalDate: jd,
+    currency: currency || orgCurrency,
+    exchangeRate: exchangeRate || 1,
+    baseCurrency: orgCurrency,
+    source: source || 'general',
+    submit,
+    lines: normalizedLines.map(l => ({
+      accountId: l.accountId,
+      accountCode: l.accountCode,
+      debit: l.debit,
+      credit: l.credit,
+    })),
+  })
+
+  if (!serverValidation.valid) {
+    return err(
+      `Validation failed:\n${serverValidation.errors.map((e: { message: string }) => `  • ${e.message}`).join('\n')}`,
+      422,
+      { errors: serverValidation.errors, warnings: serverValidation.warnings },
+      'VALIDATION_ERROR'
+    )
+  }
+
+  // Auto-fix rounding differences (Odoo's _check_total_amount)
+  if (submit) {
+    const fixedLines = autoFixRounding(normalizedLines)
+    normalizedLines.splice(0, normalizedLines.length, ...fixedLines)
+  }
+
   const status = submit ? 'Submitted' : 'Draft'
 
   // === Atomic journal creation ===
