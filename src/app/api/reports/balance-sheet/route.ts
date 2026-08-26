@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
 import { ok, err, getSystemContext } from "@/lib/api"
+import { computeAccountBalances, computeFinancialSummary, isContraAsset, type AccountBalance } from '@/lib/finance'
 
 // GET /api/reports/balance-sheet — as-of reporting date
+// Uses shared finance module so Net Income matches Income Statement and Cash Flow.
 export async function GET(req: NextRequest) {
   const ctx = await getSystemContext()
   const url = new URL(req.url)
@@ -10,123 +11,80 @@ export async function GET(req: NextRequest) {
     ? new Date(url.searchParams.get('asOf')!)
     : new Date('2026-12-31')
 
-  const journals = await db.journal.findMany({
-    where: {
-      organizationId: ctx.organizationId,
-      status: 'Posted',
-      journalDate: { lte: asOf },
-    },
-    include: { lines: { include: { account: true } } },
+  const balances = await computeAccountBalances({
+    organizationId: ctx.organizationId,
+    asOf,
   })
 
-  // Aggregate per account
-  const bal: Record<string, { debit: number; credit: number }> = {}
-  for (const j of journals) {
-    for (const l of j.lines) {
-      if (!l.accountId) continue
-      if (!bal[l.accountId]) bal[l.accountId] = { debit: 0, credit: 0 }
-      bal[l.accountId].debit += l.debit
-      bal[l.accountId].credit += l.credit
-    }
-  }
+  const summary = computeFinancialSummary(balances)
 
-  const accounts = await db.account.findMany({
-    where: { organizationId: ctx.organizationId },
-    orderBy: { code: 'asc' },
-  })
-
-  // Build sectioned balance sheet
+  // Build sections
   type Section = {
     label: string
     items: Array<{ code: string; name: string; amount: number }>
     total: number
   }
 
-  function buildSection(types: string[], headerLabel: string): Section {
+  function buildSection(accounts: AccountBalance[], sign: 1 | -1 = 1): { items: Array<{ code: string; name: string; amount: number }>; total: number } {
     const items: Array<{ code: string; name: string; amount: number }> = []
     let total = 0
     for (const a of accounts) {
-      if (!types.includes(a.accountType)) continue
-      if (a.subType === 'Header') continue
-      const b = bal[a.id] || { debit: 0, credit: 0 }
-      const net = b.debit - b.credit
-      const amount = a.normalBalance === 'Debit' ? net : -net
+      const net = a.netBalance
+      // For Asset accounts (debit-normal): amount = net (debit - credit)
+      // For Liability/Equity accounts (credit-normal): amount = -net (credit - debit)
+      let amount = sign === 1 ? net : -net
+      // Contra-assets shown as negative deduction
+      if (isContraAsset(a)) {
+        amount = -Math.abs(amount)
+      }
       if (Math.abs(amount) < 0.005) continue
-      // Contra-assets (e.g. Accumulated Depreciation) are deducted from gross.
-      // Detect via name pattern and flip the sign so the BS shows them as a reduction.
-      const lowerName = a.name.toLowerCase()
-      const isContraAsset = lowerName.includes('accumulated depreciation') || lowerName.includes('accum dep') || lowerName.includes('accumdep')
-      const displayAmount = isContraAsset ? -Math.abs(amount) : amount
-      items.push({ code: a.code, name: a.name, amount: displayAmount })
-      total += displayAmount
+      items.push({ code: a.code, name: a.name, amount })
+      total += amount
     }
-    return { label: headerLabel, items, total }
+    return { items, total }
   }
 
   // ASSETS
-  const currentAssets = buildSection(['Asset'], 'Current Assets')
-    // Filter to current assets (split fixed assets out)
-  const fixedAssets: Section = { label: 'Fixed Assets', items: [], total: 0 }
-  const otherAssets: Section = { label: 'Other Assets', items: [], total: 0 }
-  const currentAssetItems: Array<{ code: string; name: string; amount: number }> = []
-  let currentAssetTotal = 0
-  for (const item of currentAssets.items) {
-    const acct = accounts.find((a) => a.code === item.code)
-    if (acct?.subType === 'Fixed Asset') {
-      fixedAssets.items.push(item)
-      fixedAssets.total += item.amount
-    } else if (acct?.subType === 'Other Asset' || acct?.subType === 'Intangible') {
-      otherAssets.items.push(item)
-      otherAssets.total += item.amount
-    } else {
-      currentAssetItems.push(item)
-      currentAssetTotal += item.amount
-    }
-  }
-  const totalAssets = currentAssetTotal + fixedAssets.total + otherAssets.total
+  const assetAccounts = balances.filter(a => a.accountType === 'Asset')
+  const currentAssetAccounts = assetAccounts.filter(a => a.subType === 'Current Asset')
+  const fixedAssetAccounts = assetAccounts.filter(a => a.subType === 'Fixed Asset')
+  const otherAssetAccounts = assetAccounts.filter(a =>
+    a.subType === 'Other Asset' || a.subType === 'Intangible'
+  )
+
+  const currentAssets = buildSection(currentAssetAccounts, 1)
+  const fixedAssets = buildSection(fixedAssetAccounts, 1)
+  const otherAssets = buildSection(otherAssetAccounts, 1)
 
   // LIABILITIES
-  const liabilities = buildSection(['Liability'], 'Liabilities')
-  const currentLiab: Section = { label: 'Current Liabilities', items: [], total: 0 }
-  const longTermLiab: Section = { label: 'Long-term Liabilities', items: [], total: 0 }
-  for (const item of liabilities.items) {
-    const acct = accounts.find((a) => a.code === item.code)
-    if (acct?.subType === 'Long-term Liability') {
-      longTermLiab.items.push(item)
-      longTermLiab.total += item.amount
-    } else {
-      currentLiab.items.push(item)
-      currentLiab.total += item.amount
-    }
-  }
-  const totalLiabilities = currentLiab.total + longTermLiab.total
+  const liabilityAccounts = balances.filter(a => a.accountType === 'Liability')
+  const currentLiabAccounts = liabilityAccounts.filter(a => a.subType === 'Current Liability')
+  const longTermLiabAccounts = liabilityAccounts.filter(a => a.subType === 'Long-term Liability')
+
+  const currentLiabilities = buildSection(currentLiabAccounts, -1)
+  const longTermLiabilities = buildSection(longTermLiabAccounts, -1)
 
   // EQUITY
-  const equity = buildSection(['Equity'], 'Equity')
-  // Compute net income (YTD revenue - YTD expenses) — closed into equity on the BS
-  let netIncome = 0
-  for (const a of accounts) {
-    const b = bal[a.id] || { debit: 0, credit: 0 }
-    const net = b.debit - b.credit
-    if (a.accountType === 'Revenue') netIncome += -net // credit increases revenue (positive)
-    else if (a.accountType === 'Expense') netIncome -= net // expenses REDUCE net income (debits are positive expenses, so subtract)
-  }
+  const equityAccounts = balances.filter(a => a.accountType === 'Equity')
+  const equity = buildSection(equityAccounts, -1)
 
-  const totalEquity = equity.total + netIncome
-  const totalLiabAndEquity = totalLiabilities + totalEquity
+  const totalAssets = currentAssets.total + fixedAssets.total + otherAssets.total
+  const totalLiabilities = currentLiabilities.total + longTermLiabilities.total
+  const totalEquity = equity.total
+  const totalLiabAndEquity = totalLiabilities + totalEquity + summary.netIncome
 
   return ok({
     asOf: asOf.toISOString(),
     sections: {
-      currentAssets: { label: 'Current Assets', items: currentAssetItems, total: currentAssetTotal },
-      fixedAssets,
-      otherAssets,
+      currentAssets: { label: 'Current Assets', ...currentAssets },
+      fixedAssets: { label: 'Fixed Assets', ...fixedAssets },
+      otherAssets: { label: 'Other Assets', ...otherAssets },
       totalAssets,
-      currentLiabilities: currentLiab,
-      longTermLiabilities: longTermLiab,
+      currentLiabilities: { label: 'Current Liabilities', ...currentLiabilities },
+      longTermLiabilities: { label: 'Long-term Liabilities', ...longTermLiabilities },
       totalLiabilities,
-      equity,
-      netIncome,
+      equity: { label: 'Equity', ...equity },
+      netIncome: summary.netIncome,
       totalEquity,
       totalLiabilitiesAndEquity: totalLiabAndEquity,
       isBalanced: Math.abs(totalAssets - totalLiabAndEquity) < 0.01,

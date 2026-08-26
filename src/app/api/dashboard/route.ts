@@ -39,35 +39,38 @@ export async function GET() {
   // Cash position (sum of all bank accounts)
   const cashBalance = bankAccounts.reduce((s, b) => s + b.balance, 0)
 
-  // Compute YTD revenue & expenses from posted journal lines
-  let ytdRevenue = 0
-  let ytdExpenses = 0
+  // Compute YTD revenue & expenses using the shared finance module
+  // so dashboard numbers match Trial Balance, Income Statement, Balance Sheet, and Cash Flow.
+  const { computeAccountBalances, computeFinancialSummary } = await import('@/lib/finance')
+  const balances = await computeAccountBalances({
+    organizationId: ctx.organizationId,
+    asOf: new Date('2026-12-31'),
+    from: new Date('2026-01-01'),
+  })
+  const summary = computeFinancialSummary(balances)
+
+  const ytdRevenue = summary.totalRevenue       // operating + other income
+  const ytdExpenses = summary.costOfGoodsSold + summary.operatingExpenses + summary.otherExpenses
+  const netIncome = summary.netIncome
+
+  // Monthly P&L for chart (still computed from raw journals for per-month breakdown)
   const monthlyPnl: Array<{ month: string; revenue: number; expenses: number }> = []
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
   for (let m = 0; m < 12; m++) {
     monthlyPnl.push({ month: months[m], revenue: 0, expenses: 0 })
   }
-
   for (const j of postedJournals) {
     const m = j.journalDate.getMonth()
     for (const l of j.lines) {
       const acct = l.account
       if (!acct) continue
-      const amount = l.debit - l.credit // signed: positive = debit-heavy
       if (acct.accountType === 'Revenue') {
-        // Revenue has normal credit balance — credit increases revenue
-        ytdRevenue += l.credit - l.debit
         monthlyPnl[m].revenue += l.credit - l.debit
       } else if (acct.accountType === 'Expense') {
-        // Expense has normal debit balance
-        ytdExpenses += l.debit - l.credit
         monthlyPnl[m].expenses += l.debit - l.credit
       }
     }
   }
-
-  const netIncome = ytdRevenue - ytdExpenses
 
   const accountsReceivable = customers.reduce((s, c) => s + c.balance, 0)
   const accountsPayable = vendors.reduce((s, v) => s + v.balance, 0)

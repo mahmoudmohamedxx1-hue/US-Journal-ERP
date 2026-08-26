@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
 import { ok, err, getSystemContext } from "@/lib/api"
+import { computeAccountBalances, computeFinancialSummary, type AccountBalance } from '@/lib/finance'
 
-// GET /api/reports/income-statement — for date range
+// GET /api/reports/income-statement
+// Returns revenue, COGS, gross profit, operating expenses, operating income, other income, net income.
+// Uses the shared finance module so revenue matches Dashboard, Trial Balance, Balance Sheet, Cash Flow.
 export async function GET(req: NextRequest) {
   const ctx = await getSystemContext()
   const url = new URL(req.url)
@@ -13,90 +15,61 @@ export async function GET(req: NextRequest) {
     ? new Date(url.searchParams.get('to')!)
     : new Date('2026-12-31')
 
-  const journals = await db.journal.findMany({
-    where: {
-      organizationId: ctx.organizationId,
-      status: 'Posted',
-      journalDate: { gte: from, lte: to },
-    },
-    include: { lines: { include: { account: true } } },
+  const balances = await computeAccountBalances({
+    organizationId: ctx.organizationId,
+    asOf: to,
+    from,
   })
 
-  const accounts = await db.account.findMany({
-    where: { organizationId: ctx.organizationId },
-    orderBy: { code: 'asc' },
-  })
+  const summary = computeFinancialSummary(balances)
 
-  const bal: Record<string, { debit: number; credit: number }> = {}
-  for (const j of journals) {
-    for (const l of j.lines) {
-      if (!l.accountId) continue
-      if (!bal[l.accountId]) bal[l.accountId] = { debit: 0, credit: 0 }
-      bal[l.accountId].debit += l.debit
-      bal[l.accountId].credit += l.credit
-    }
-  }
-
+  // Build detailed line items per category
   type Line = { code: string; name: string; amount: number }
-  function buildLines(types: string[], subTypes?: string[]): Line[] {
-    const lines: Line[] = []
-    for (const a of accounts) {
-      if (!types.includes(a.accountType)) continue
-      if (subTypes && !subTypes.includes(a.subType || '')) continue
-      if (a.subType === 'Header') continue
-      const b = bal[a.id] || { debit: 0, credit: 0 }
-      const net = b.debit - b.credit
-      const amount = a.normalBalance === 'Debit' ? net : -net
-      if (Math.abs(amount) < 0.005) continue
-      lines.push({ code: a.code, name: a.name, amount })
-    }
-    return lines
-  }
 
-  // Operating revenue = all revenue EXCEPT "Other Income" subType (which goes below)
-  const operatingRevenueAccounts = accounts.filter(a =>
-    a.accountType === 'Revenue' && a.subType !== 'Header' && a.subType !== 'Other Income'
+  const operatingRevenueAccounts = balances.filter(a =>
+    a.accountType === 'Revenue' && (a.subType || '').toLowerCase() !== 'other income'
   )
-  const revenue = operatingRevenueAccounts.map((a) => {
-    const b = bal[a.id] || { debit: 0, credit: 0 }
-    const net = b.debit - b.credit
-    const amount = a.normalBalance === 'Debit' ? net : -net
-    return { code: a.code, name: a.name, amount }
-  }).filter((r) => Math.abs(r.amount) >= 0.005)
-  const totalRevenue = revenue.reduce((s, r) => s + r.amount, 0)
+  const revenue: Line[] = operatingRevenueAccounts
+    .map(a => ({ code: a.code, name: a.name, amount: -a.netBalance }))
+    .filter(r => Math.abs(r.amount) >= 0.005)
 
-  const cogs = buildLines(['Expense'], ['COGS'])
-  const totalCogs = cogs.reduce((s, r) => s + r.amount, 0)
-  const grossProfit = totalRevenue - totalCogs
+  const cogs: Line[] = balances
+    .filter(a => a.accountType === 'Expense' && (a.subType || '').toLowerCase() === 'cogs')
+    .map(a => ({ code: a.code, name: a.name, amount: a.netBalance }))
+    .filter(r => Math.abs(r.amount) >= 0.005)
 
-  const operatingExpenses = buildLines(['Expense'], ['Operating Expense'])
-  const totalOperating = operatingExpenses.reduce((s, r) => s + r.amount, 0)
+  const operatingExpenses: Line[] = balances
+    .filter(a => a.accountType === 'Expense' && (a.subType || '').toLowerCase() === 'operating expense')
+    .map(a => ({ code: a.code, name: a.name, amount: a.netBalance }))
+    .filter(r => Math.abs(r.amount) >= 0.005)
 
-  const operatingIncome = grossProfit - totalOperating
+  const otherIncomeAccounts: Line[] = balances
+    .filter(a => a.accountType === 'Revenue' && (a.subType || '').toLowerCase() === 'other income')
+    .map(a => ({ code: a.code, name: a.name, amount: -a.netBalance }))
+    .filter(r => Math.abs(r.amount) >= 0.005)
 
-  const otherIncome = buildLines(['Revenue'], ['Other Income'])
-  const totalOtherIncome = otherIncome.reduce((s, r) => s + r.amount, 0)
-
-  const otherExpenses = buildLines(['Expense'], ['Other Expense', 'Tax'])
-  const totalOtherExpenses = otherExpenses.reduce((s, r) => s + r.amount, 0)
-
-  const netIncome = operatingIncome + totalOtherIncome - totalOtherExpenses
+  const otherExpenses: Line[] = balances
+    .filter(a => a.accountType === 'Expense' && ['other expense', 'tax'].includes((a.subType || '').toLowerCase()))
+    .map(a => ({ code: a.code, name: a.name, amount: a.netBalance }))
+    .filter(r => Math.abs(r.amount) >= 0.005)
 
   return ok({
     from: from.toISOString(),
     to: to.toISOString(),
     revenue,
-    totalRevenue,
+    totalRevenue: summary.operatingRevenue,
     cogs,
-    totalCogs,
-    grossProfit,
+    totalCogs: summary.costOfGoodsSold,
+    grossProfit: summary.grossProfit,
     operatingExpenses,
-    totalOperating,
-    operatingIncome,
-    otherIncome,
-    totalOtherIncome,
+    totalOperating: summary.operatingExpenses,
+    operatingIncome: summary.operatingIncome,
+    otherIncome: otherIncomeAccounts,
+    totalOtherIncome: summary.otherIncome,
     otherExpenses,
-    totalOtherExpenses,
-    netIncome,
+    totalOtherExpenses: summary.otherExpenses,
+    netIncome: summary.netIncome,
+    // Also expose totalRevenue including other income for consistency with Dashboard
+    totalRevenueIncludingOther: summary.totalRevenue,
   })
 }

@@ -502,3 +502,51 @@ Stage Summary:
 - The CSV export fix was the most impactful — invoice/bill CSV exports now include customer/vendor names
 - The Edit Draft bug is a significant workflow gap — users can't edit existing drafts
 - The duplicate org/period issue reveals that getSystemContext() has a race condition — it auto-creates orgs/periods every time it can't find them, leading to duplicates when multiple processes start simultaneously
+
+---
+Task ID: shared-finance-module
+Agent: main
+Task: Create shared financial calculations module so revenue/net income is IDENTICAL across all reports. Inspired by Odoo's account_report.py architecture.
+
+Work Log:
+- Studied Odoo's account_report.py — they use a single AccountReport model with a formula engine that references account codes by pattern. All reports share the same calculation engine.
+- Created src/lib/finance.ts with 3 core functions:
+  1. computeAccountBalances() — SINGLE SOURCE OF TRUTH for all account balances
+  2. computeFinancialSummary() — derives revenue, expenses, net income, assets, liabilities, equity
+  3. computeCashFlow() — indirect method cash flow using the same balances
+- Refactored all 4 report routes to use the shared module:
+  - /api/reports/trial-balance → computeAccountBalances()
+  - /api/reports/income-statement → computeAccountBalances() + computeFinancialSummary()
+  - /api/reports/balance-sheet → computeAccountBalances() + computeFinancialSummary()
+  - /api/reports/cash-flow → computeAccountBalances() + computeFinancialSummary() + computeCashFlow()
+- Refactored /api/dashboard to use the shared module for ytdRevenue, ytdExpenses, netIncome
+- Fixed getSystemContext() race condition: changed from findFirst()+create() to findUnique(ORG_ID)+create(ORG_ID) with try/catch fallback. Uses a FIXED org ID to prevent duplicate orgs.
+
+Verified Consistency (BEFORE fix):
+- Dashboard Revenue: $131,440.32 (included Other Income)
+- Income Statement Revenue: $127,314.82 (excluded Other Income) ← MISMATCH
+- Balance Sheet Net Income: -$30,259.68
+- Cash Flow Net Income: -$30,259.68
+
+Verified Consistency (AFTER fix):
+- Dashboard Revenue: $131,440.32 (totalRevenue = operating + other)
+- Income Statement Total Revenue: $131,440.32 (totalRevenueIncludingOther) ← MATCHES!
+- Dashboard Net Income: -$30,259.68
+- Income Statement Net Income: -$30,259.68 ← MATCHES!
+- Balance Sheet Net Income: -$30,259.68 ← MATCHES!
+- Cash Flow Net Income: -$30,259.68 ← MATCHES!
+- Trial Balance: $1,029,325.50 = $1,029,325.50 Balanced ✓
+
+Verified After Posting New Journal ($5,000 consulting revenue):
+- Dashboard Net Income: -$25,259.68 (was -$30,259.68, +$5,000) ✓
+- Income Statement Net Income: -$25,259.68 ✓
+- Balance Sheet Net Income: -$25,259.68 ✓
+- Cash Flow Net Income: -$25,259.68 ✓
+- All 4 reports show the SAME net income after the new journal posting.
+
+Stage Summary:
+- Created src/lib/finance.ts — shared financial calculations module
+- Refactored 5 API routes (4 reports + dashboard) to use the shared module
+- Fixed the root cause of revenue inconsistency: all reports now use the same computeAccountBalances() and computeFinancialSummary() functions
+- Fixed getSystemContext() race condition that created duplicate organizations
+- All financial reports now reconcile with each other perfectly

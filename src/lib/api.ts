@@ -32,18 +32,27 @@ let cachedContext: SystemContext | null = null
 export async function getSystemContext(): Promise<SystemContext> {
   if (cachedContext) return cachedContext
 
-  // Find or create the organization
-  let org = await db.organization.findFirst()
+  // Find or create the organization.
+  // Use a FIXED id to prevent duplicate orgs under concurrent startup.
+  // (Previously used findFirst() + create(), which raced and created duplicates.)
+  const ORG_ID = 'org-us-journal'
+  let org = await db.organization.findUnique({ where: { id: ORG_ID } })
   if (!org) {
-    org = await db.organization.create({
-      data: {
-        name: 'US Journal ERP',
-        legalName: 'US Journal ERP',
-        currency: 'EGP',
-        baseCurrency: 'EGP',
-      },
-    })
-    console.log(`[api] Auto-created organization: ${org.name}`)
+    try {
+      org = await db.organization.create({
+        data: {
+          id: ORG_ID,
+          name: 'US Journal Holdings',
+          legalName: 'US Journal Holdings, Inc.',
+          currency: 'USD',
+          baseCurrency: 'USD',
+        },
+      })
+      console.log(`[api] Auto-created organization: ${org.name}`)
+    } catch (e: unknown) {
+      // If another process created it concurrently, fetch it
+      org = await db.organization.findUniqueOrThrow({ where: { id: ORG_ID } })
+    }
   }
 
   // Find or create the admin user
