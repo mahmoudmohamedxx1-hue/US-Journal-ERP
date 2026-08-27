@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/erp/empty-state'
+import { RowActions } from '@/components/erp/row-actions'
+import { toast } from 'sonner'
 import { KpiCard } from '@/components/erp/kpi-card'
 
 interface FixedAsset {
@@ -59,9 +61,9 @@ export function FixedAssetsView() {
       <Card><CardContent className="p-0">
         {loading ? <div className="p-4 space-y-2">{[1,2,3].map((i) => <Skeleton key={i} className="h-9 w-full" />)}</div>
         : assets.length === 0 ? <EmptyState icon={Building2} title="No fixed assets yet" description="Register your first fixed asset to start tracking depreciation." action={<Button size="sm" onClick={() => setShowCreate(true)}><Plus className="mr-1.5 h-3.5 w-3.5" />New Asset</Button>} />
-        : <div className="overflow-x-auto"><div className="grid grid-cols-[6rem_1fr_6rem_6rem_6rem_6rem_5rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[900px]"><div>Asset #</div><div>Name</div><div className="text-right">Cost</div><div className="text-right">Depreciation</div><div className="text-right">Book Value</div><div>Method</div><div>Status</div></div>
+        : <div className="overflow-x-auto"><div className="grid grid-cols-[6rem_1fr_6rem_6rem_6rem_6rem_5rem_2.5rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[900px]"><div>Asset #</div><div>Name</div><div className="text-right">Cost</div><div className="text-right">Depreciation</div><div className="text-right">Book Value</div><div>Method</div><div>Status</div></div>
           {assets.map((a) => (
-            <div key={a.id} className="grid grid-cols-[6rem_1fr_6rem_6rem_6rem_6rem_5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[900px]">
+            <div key={a.id} className="grid grid-cols-[6rem_1fr_6rem_6rem_6rem_6rem_5rem_2.5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[900px]">
               <div className="font-mono text-xs">{a.assetNumber}</div>
               <div className="truncate">{a.name}</div>
               <div className="text-right font-mono text-xs tabular-nums">{formatMoney(a.purchaseCost)}</div>
@@ -69,6 +71,17 @@ export function FixedAssetsView() {
               <div className="text-right font-mono text-xs tabular-nums text-emerald-600">{formatMoney(a.currentBookValue)}</div>
               <div className="text-xs text-muted-foreground">{a.depreciationMethod}</div>
               <div><Badge variant="outline" className="text-[10px]">{a.status}</Badge></div>
+              <div><RowActions actions={[
+                {label: "Depreciate", onClick: async () => {
+                  const r = await fetch("/api/fixed-assets/depreciate", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({period: new Date().toISOString().slice(0, 7)})
+                  })
+                  const d = await r.json()
+                  if (r.ok) { toast.success("Depreciated " + d.assetsProcessed + " assets, total " + formatMoney(d.totalDepreciation)); load() }
+                  else { toast.error(d.error || "Failed") }
+                }},
+              ]} /></div>
             </div>
           ))}</div>}
       </CardContent></Card>

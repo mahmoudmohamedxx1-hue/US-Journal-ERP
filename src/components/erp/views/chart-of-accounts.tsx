@@ -79,11 +79,19 @@ export function ChartOfAccountsView() {
   }
 
   const toggleActive = async (acct: AccountRow) => {
-    // Optimistic update
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === acct.id ? { ...a, active: !a.active } : a)),
-    )
-    // Note: full PATCH endpoint omitted for brevity; this updates local state
+    // Save to DB via API
+    try {
+      await fetch(`/api/accounts/${acct.id}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !acct.active })
+      })
+      setAccounts((prev) =>
+        prev.map((a) => (a.id === acct.id ? { ...a, active: !a.active } : a)),
+      )
+    } catch {
+      // ignore — toggle failed silently
+    }
   }
 
   const renderRow = (a: AccountRow, level: number, hasChildren: boolean) => {

@@ -326,7 +326,7 @@ export function JournalDetailView() {
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => useErpStore.getState().setView('journal-new')}
+                    onClick={() => { const store = useErpStore.getState(); store.setPendingSearch(''); store.setView('journal-new'); }}
                     disabled={actionLoading !== null}
                   >
                     Edit Draft

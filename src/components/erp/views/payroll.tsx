@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/erp/empty-state'
-import { KpiCard } from '@/components/erp/kpi-card'
+import { RowActions } from '@/components/erp/row-actions'
 import { toast } from 'sonner'
+import { KpiCard } from '@/components/erp/kpi-card'
 
 export function PayrollView() {
   const [employees, setEmployees] = React.useState<Array<{id:string;employeeNumber:string;name:string;position:string|null;basicSalary:number;status:string}>>([])
@@ -58,13 +59,22 @@ export function PayrollView() {
       <Card><CardContent className="p-0">
         {loading ? <div className="p-4"><Skeleton className="h-9 w-full" /></div>
         : employees.length === 0 ? <EmptyState icon={Users} title="No employees yet" description="Add employees to run payroll." action={<Button size="sm" onClick={() => setShowCreateEmp(true)}><Plus className="mr-1.5 h-3.5 w-3.5" />New Employee</Button>} />
-        : <div className="overflow-x-auto"><div className="grid grid-cols-[6rem_1fr_6rem_6rem_4rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[600px]"><div>Number</div><div>Name</div><div className="text-right">Salary</div><div className="text-right">Period Net</div><div>Status</div></div>
+        : <div className="overflow-x-auto"><div className="grid grid-cols-[6rem_1fr_6rem_6rem_4rem_2.5rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[600px]"><div>Number</div><div>Name</div><div className="text-right">Salary</div><div className="text-right">Period Net</div><div>Status</div></div>
           {employees.map(e => { const ps = payslips.find(p => p.employee?.name === e.name); return (
-            <div key={e.id} className="grid grid-cols-[6rem_1fr_6rem_6rem_4rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm min-w-[600px]">
+            <div key={e.id} className="grid grid-cols-[6rem_1fr_6rem_6rem_4rem_2.5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm min-w-[600px]">
               <div className="font-mono text-xs">{e.employeeNumber}</div><div><div className="font-medium">{e.name}</div><div className="text-[10px] text-muted-foreground">{e.position||'—'}</div></div>
               <div className="text-right font-mono text-xs tabular-nums">{formatMoney(e.basicSalary)}</div>
               <div className="text-right font-mono text-xs tabular-nums">{ps ? formatMoney(ps.netPay) : '—'}</div>
               <div><Badge variant="outline" className="text-[10px]">{e.status}</Badge></div>
+              <div><RowActions actions={[
+                {label: "View Payslip", onClick: async () => {
+                  const r = await fetch("/api/payslips")
+                  const d = await r.json()
+                  const ps = (d.payslips || []).find((p: any) => p.employeeId === e.id)
+                  if (ps) { toast.info("Payslip: Net " + formatMoney(ps.netPay) + " (" + ps.payPeriod + ")") }
+                  else { toast.info("No payslip found for " + e.name) }
+                }},
+              ]} /></div>
             </div>)})}</div>}
       </CardContent></Card>
       <CreateFormDialog open={showCreateEmp} onOpenChange={setShowCreateEmp} title="New Employee" apiEndpoint="/api/employees" successMessage="Employee created" onSuccess={() => setTimeout(()=>load(),100)} fields={[

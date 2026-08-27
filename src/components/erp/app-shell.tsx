@@ -167,6 +167,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const handleLogout = () => {
+    if (confirm("Log out?")) {
+      fetch("/api/auth/logout", { method: "POST" }).then(() => window.location.reload())
+    }
+  }
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
@@ -239,7 +245,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* User chip at the bottom */}
         <div className="border-t border-sidebar-border p-3">
-          <div className="flex items-center gap-2 rounded-md bg-sidebar-accent/50 px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-md bg-sidebar-accent/50 px-2 py-1.5 cursor-pointer hover:bg-sidebar-accent" onClick={handleLogout}>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
               {user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
             </div>
@@ -310,7 +316,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 relative">
+            <Button variant="ghost" size="icon" className="h-8 w-8 relative" onClick={() => { fetch("/api/notifications").then(r => r.json()).then(d => { const n = d.unreadCount || 0; alert(n > 0 ? n + " unread notifications" : "No new notifications") }) }}>
               <Bell className="h-4 w-4" />
               <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
             </Button>

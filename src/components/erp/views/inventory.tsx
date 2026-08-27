@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/erp/kpi-card'
 import { EmptyState } from '@/components/erp/empty-state'
+import { RowActions } from '@/components/erp/row-actions'
+import { toast } from 'sonner'
 import { exportToCsv } from '@/lib/csv-export'
 
 interface Product {
@@ -68,11 +70,11 @@ export function InventoryView() {
         {loading ? <div className="p-4 space-y-2">{[1,2,3,4].map((i) => <Skeleton key={i} className="h-9 w-full" />)}</div>
         : products.length === 0 ? <EmptyState icon={Package} title="No products yet" description="Create your first product to start tracking inventory." action={<Button size="sm" onClick={() => setShowCreate(true)}><Plus className="mr-1.5 h-3.5 w-3.5" />New Product</Button>} />
         : <div className="overflow-x-auto">
-            <div className="grid grid-cols-[6rem_1fr_6rem_5rem_6rem_6rem_5rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[800px]">
+            <div className="grid grid-cols-[6rem_1fr_6rem_5rem_6rem_6rem_5rem_2.5rem] items-center gap-2 border-b bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground min-w-[800px]">
               <div>SKU</div><div>Name</div><div>Category</div><div>Stock</div><div className="text-right">Cost</div><div className="text-right">Sale</div><div>Status</div>
             </div>
             {products.map((p) => (
-              <div key={p.id} className="grid grid-cols-[6rem_1fr_6rem_5rem_6rem_6rem_5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[800px]">
+              <div key={p.id} className="grid grid-cols-[6rem_1fr_6rem_5rem_6rem_6rem_5rem_2.5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[800px]">
                 <div className="font-mono text-xs">{p.sku}</div>
                 <div className="truncate">{p.name}</div>
                 <div className="text-xs text-muted-foreground">{p.category || '—'}</div>
@@ -80,6 +82,15 @@ export function InventoryView() {
                 <div className="text-right font-mono text-xs tabular-nums">{formatMoney(p.costPrice)}</div>
                 <div className="text-right font-mono text-xs tabular-nums">{formatMoney(p.salePrice)}</div>
                 <div>{p.active ? <Badge variant="outline" className="text-[10px] text-emerald-700 border-emerald-200 bg-emerald-50">Active</Badge> : <Badge variant="outline" className="text-[10px] text-muted-foreground">Inactive</Badge>}</div>
+                <div><RowActions actions={[
+                  {label: "View Accounting", onClick: async () => {
+                    const r = await fetch("/api/products/" + p.id + "/accounting")
+                    const d = await r.json()
+                    if (d.accounting) {
+                      toast.info("Income: " + (d.accounting.incomeAccountId || "N/A") + ", Expense: " + (d.accounting.expenseAccountId || "N/A"))
+                    } else { toast.info("No accounting config") }
+                  }},
+                ]} /></div>
               </div>
             ))}
           </div>}

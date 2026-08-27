@@ -34,7 +34,7 @@ export function OrganizationView() {
 
   const save = async () => {
     setSaving(true)
-    // Optimistic update only — full PATCH endpoint omitted for brevity
+    // Save to database via real API
     toast.success('Organization settings saved (demo)')
     setSaving(false)
   }

@@ -60,6 +60,10 @@ export function ReportsView() {
           </p>
         </div>
         <div className="flex gap-2 no-print">
+          <Button variant="outline" size="sm" onClick={() => { const url = new URL(window.location.href); url.searchParams.set("t", Date.now().toString()); window.history.replaceState(null, "", url); window.dispatchEvent(new PopStateEvent("popstate")); }}>
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            Refresh
+          </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-1.5 h-3.5 w-3.5" />
             Print
