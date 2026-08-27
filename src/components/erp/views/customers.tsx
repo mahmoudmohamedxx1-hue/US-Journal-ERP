@@ -1,15 +1,17 @@
 'use client'
 
 import * as React from 'react'
-import { Users, Plus, Search, AlertTriangle, Clock } from 'lucide-react'
+import { Users, Plus, Search, AlertTriangle, Clock, Eye, Pencil, Trash2, CreditCard } from 'lucide-react'
 import { formatMoney } from '@/lib/format'
 import { CreateFormDialog } from '@/components/erp/create-form-dialog'
+import { RowActions, createViewAction } from '@/components/erp/row-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/erp/kpi-card'
+import { toast } from 'sonner'
 
 interface Customer {
   id: string
@@ -159,7 +161,11 @@ export function CustomersView() {
             filtered.map((c) => {
               const creditUtilization = c.creditLimit ? (c.balance / c.creditLimit) * 100 : 0
               return (
-                <div key={c.id} className="grid grid-cols-[6rem_1fr_8rem_8rem_8rem_5rem_8rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5">
+                <div
+                  key={c.id}
+                  className="grid grid-cols-[6rem_1fr_8rem_8rem_8rem_5rem_8rem_2.5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 cursor-pointer group"
+                  onClick={() => window.open(`/api/partners/stats?role=customer&partyId=${c.id}`, '_blank')}
+                >
                   <div className="font-mono text-xs text-muted-foreground">{c.customerNumber}</div>
                   <div>
                     <div className="font-medium">{c.name}</div>
@@ -181,6 +187,45 @@ export function CustomersView() {
                     )}
                   </div>
                   <div className="text-right text-xs text-muted-foreground">{c.invoices?.length ?? 0} invoices</div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <RowActions actions={[
+                      {
+                        label: 'View Stats',
+                        icon: Eye,
+                        onClick: async () => {
+                          const res = await fetch(`/api/partners/stats?role=customer&partyId=${c.id}`)
+                          const d = await res.json()
+                          const s = d.stats
+                          toast.info(`${c.name}: Balance ${formatMoney(s.balance)}, ${s.openInvoicesCount} open invoices, ${s.overdueInvoicesCount} overdue`)
+                        },
+                      },
+                      {
+                        label: 'Record Payment',
+                        icon: CreditCard,
+                        onClick: async () => {
+                          // Fetch open invoices for this customer
+                          const res = await fetch(`/api/payments/register?partyType=CUSTOMER&partyId=${c.id}`)
+                          const d = await res.json()
+                          const items = d.openItems || []
+                          if (items.length === 0) {
+                            toast.info(`${c.name} has no open invoices`)
+                          } else {
+                            const total = items.reduce((s: number, i: { outstanding: number }) => s + i.outstanding, 0)
+                            toast.info(`${c.name}: ${items.length} open invoices, total outstanding ${formatMoney(total)}`)
+                          }
+                        },
+                      },
+                      {
+                        label: 'Deactivate',
+                        destructive: true,
+                        onClick: async () => {
+                          if (!confirm(`Deactivate ${c.name}?`)) return
+                          // Would call DELETE /api/customers/[id] — but we don't have that endpoint yet
+                          toast.info('Delete feature coming soon — use API: DELETE /api/customers/' + c.id)
+                        },
+                      },
+                    ]} />
+                  </div>
                 </div>
               )
             })

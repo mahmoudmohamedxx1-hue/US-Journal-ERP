@@ -1,15 +1,17 @@
 'use client'
 
 import * as React from 'react'
-import { FileText, Plus, Download, AlertTriangle } from 'lucide-react'
+import { FileText, Plus, Download, AlertTriangle, Eye, FileCheck, CreditCard } from 'lucide-react'
 import { formatMoney, formatDate } from '@/lib/format'
 import { CreateFormDialog } from '@/components/erp/create-form-dialog'
+import { RowActions } from '@/components/erp/row-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/erp/kpi-card'
 import { exportToCsv } from '@/lib/csv-export'
+import { toast } from 'sonner'
 
 interface Invoice {
   id: string
@@ -20,6 +22,8 @@ interface Invoice {
   amountPaid: number
   status: string
   description: string | null
+  currency: string
+  customerId: string
   customer: { id: string; name: string }
 }
 
@@ -109,7 +113,7 @@ export function InvoicesView() {
                 <div>Status</div>
               </div>
               {invoices.map((inv) => (
-                <div key={inv.id} className="grid grid-cols-[8rem_1fr_8rem_8rem_8rem_5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[800px]">
+                <div key={inv.id} className="grid grid-cols-[8rem_1fr_8rem_8rem_8rem_5rem_2.5rem] items-center gap-2 border-b border-border/40 px-3 py-2 text-sm hover:bg-accent/5 min-w-[900px]">
                   <div className="font-mono text-xs text-muted-foreground">{inv.invoiceNumber}</div>
                   <div className="truncate">{inv.customer?.name || '—'}</div>
                   <div className="text-xs text-muted-foreground">{formatDate(inv.invoiceDate)}</div>
@@ -120,9 +124,65 @@ export function InvoicesView() {
                       <Badge variant="outline" className="text-[10px] text-emerald-700 border-emerald-200 bg-emerald-50">Paid</Badge>
                     ) : inv.status === 'Overdue' ? (
                       <Badge variant="outline" className="text-[10px] text-red-700 border-red-200 bg-red-50">Overdue</Badge>
+                    ) : inv.status === 'Posted' ? (
+                      <Badge variant="outline" className="text-[10px] text-blue-700 border-blue-200 bg-blue-50">Posted</Badge>
                     ) : (
                       <Badge variant="outline" className="text-[10px] text-amber-700 border-amber-200 bg-amber-50">Open</Badge>
                     )}
+                  </div>
+                  <div>
+                    <RowActions actions={[
+                      ...(inv.status === 'Open' || inv.status === 'Overdue' ? [{
+                        label: 'Post to GL',
+                        icon: FileCheck,
+                        onClick: async () => {
+                          const res = await fetch(`/api/invoices/${inv.id}/post`, { method: 'POST' })
+                          const d = await res.json()
+                          if (res.ok) {
+                            toast.success(`Invoice posted → ${d.result?.journalNumber || 'journal created'}`)
+                            load()
+                          } else {
+                            toast.error(d.error || 'Failed to post')
+                          }
+                        },
+                      }] : []),
+                      ...(inv.status !== 'Paid' ? [{
+                        label: 'Record Payment',
+                        icon: CreditCard,
+                        onClick: async () => {
+                          // Auto-register payment for this invoice
+                          const bankRes = await fetch('/api/banking')
+                          const bankData = await bankRes.json()
+                          const bank = bankData.accounts?.[0]
+                          if (!bank) { toast.error('No bank account found'); return }
+
+                          const res = await fetch('/api/payments/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              paymentNumber: `RCT-${Date.now()}`,
+                              paymentType: 'RECEIPT',
+                              partyType: 'CUSTOMER',
+                              partyId: inv.customerId,
+                              bankAccountId: bank.id,
+                              paymentDate: new Date().toISOString().slice(0, 10),
+                              amount: (inv.amount - inv.amountPaid) / 100,
+                              currency: inv.currency || 'USD',
+                              reference: inv.invoiceNumber,
+                              notes: `Payment for ${inv.invoiceNumber}`,
+                              allocations: [{ invoiceId: inv.id, amount: (inv.amount - inv.amountPaid) / 100 }],
+                            }),
+                          })
+                          const d = await res.json()
+                          if (res.ok) {
+                            toast.success(`Payment recorded → invoice ${inv.invoiceNumber} marked ${d.totalAllocated >= inv.amount ? 'Paid' : 'Partially Paid'}`)
+                            load()
+                          } else {
+                            toast.error(d.error || 'Payment failed')
+                          }
+                        },
+                      }] : []),
+                    ]} />
                   </div>
                 </div>
               ))}

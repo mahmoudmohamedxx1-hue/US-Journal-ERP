@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Repeat, Plus, Play, Pause } from 'lucide-react'
+import { Repeat, Plus, Play, Pause, Zap } from 'lucide-react'
 import { formatDate } from '@/lib/format'
 import { CreateFormDialog } from '@/components/erp/create-form-dialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/erp/empty-state'
+import { toast } from 'sonner'
 
 interface RecurringJournal {
   id: string; name: string; description: string | null; frequency: string
@@ -34,6 +35,23 @@ export function RecurringJournalsView() {
         <h1 className="text-2xl font-semibold tracking-tight">Recurring Journals</h1>
         <p className="text-sm text-muted-foreground">Automate repetitive journal entries like rent, depreciation, and salaries.</p></div>
         <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="mr-1.5 h-3.5 w-3.5" />New Recurring Journal</Button>
+        {journals.length > 0 && (
+          <Button size="sm" variant="outline" onClick={async () => {
+            const res = await fetch('/api/recurring-journals/execute', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+            const d = await res.json()
+            if (res.ok) {
+              const r = d.results || d.result
+              if (r?.executed !== undefined) {
+                toast.success(`Executed ${r.executed} recurring journals (${r.failed} failed)`)
+              } else if (r?.executed) {
+                toast.success(r.message || 'Recurring journal executed')
+              }
+              load()
+            } else {
+              toast.error(d.error || 'Failed')
+            }
+          }}><Zap className="mr-1.5 h-3.5 w-3.5" />Execute All Due</Button>
+        )}
       </div>
 
       <Card><CardContent className="p-0">
@@ -47,7 +65,19 @@ export function RecurringJournalsView() {
                 {j.description && <div className="text-xs text-muted-foreground mt-0.5">{j.description}</div>}
               </div>
               <Badge variant="outline" className={j.status === 'Active' ? 'text-emerald-700 border-emerald-200 bg-emerald-50 text-[10px]' : 'text-muted-foreground text-[10px]'}>{j.status}</Badge>
-              <Button size="icon" variant="ghost" className="h-7 w-7">{j.status === 'Active' ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}</Button>
+              <Button size="sm" variant="outline" className="h-7" onClick={async () => {
+                const res = await fetch('/api/recurring-journals/execute', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ recurringJournalId: j.id })
+                })
+                const d = await res.json()
+                if (res.ok) {
+                  toast.success(d.result?.message || 'Recurring journal executed')
+                  load()
+                } else {
+                  toast.error(d.error || 'Failed')
+                }
+              }}><Zap className="mr-1 h-3 w-3" />Execute</Button>
             </div>
           ))}</div>}
       </CardContent></Card>

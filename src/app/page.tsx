@@ -36,6 +36,7 @@ import { CashFlowForecastView } from '@/components/erp/views/cash-flow-forecast'
 import { ReconciliationView } from '@/components/erp/views/reconciliation'
 import { CustomReportView } from '@/components/erp/views/custom-report'
 import { JournalImportView } from '@/components/erp/views/journal-import'
+import { LoginView } from '@/components/erp/views/login'
 
 interface AppUser {
   id: string
@@ -60,41 +61,55 @@ export default function Home() {
   const view = useErpStore((s) => s.view)
   const [loading, setLoading] = React.useState(true)
   const [user, setUser] = React.useState<AppUser | null>(null)
+  const [showLogin, setShowLogin] = React.useState(false)
 
-  // On mount: auto-create org + admin via getSystemContext(), then load the app.
-  // No login screen, no setup wizard — just open and start working.
+  // On mount: check if user is authenticated via /api/auth/me
   React.useEffect(() => {
     let cancelled = false
 
     async function init() {
       try {
-        // Calling /api/organization triggers getSystemContext() which
-        // auto-creates the org + admin if they don't exist yet.
-        const res = await fetch('/api/organization')
+        // Check if already authenticated
+        const meRes = await fetch('/api/auth/me')
         if (cancelled) return
-        if (res.ok) {
-          const data = await res.json()
-          if (data?.organization) {
-            // Also fetch the user info
-            const usersRes = await fetch('/api/users')
-            if (usersRes.ok) {
-              const usersData = await usersRes.json()
-              if (usersData?.users?.[0]) {
-                const u = usersData.users[0]
-                setUser({
-                  id: u.id,
-                  email: u.email,
-                  name: u.name,
-                  role: u.role,
-                })
-              }
-            }
+
+        if (meRes.ok) {
+          const meData = await meRes.json()
+          if (meData?.user) {
+            setUser({
+              id: meData.user.id,
+              email: meData.user.email,
+              name: meData.user.name,
+              role: meData.user.role,
+            })
+            setLoading(false)
+            return
           }
         }
+
+        // Not authenticated — check if any users exist
+        const orgRes = await fetch('/api/organization')
+        if (cancelled) return
+
+        if (orgRes.ok) {
+          const orgData = await orgRes.json()
+          if (orgData?.organization) {
+            // Org exists — show login
+            setShowLogin(true)
+            setLoading(false)
+          } else {
+            // No org yet — show login (will auto-create on first login)
+            setShowLogin(true)
+            setLoading(false)
+          }
+        } else {
+          setShowLogin(true)
+          setLoading(false)
+        }
       } catch {
-        // ignore — will retry on next render
+        setShowLogin(true)
+        setLoading(false)
       }
-      if (!cancelled) setLoading(false)
     }
 
     init()
@@ -102,12 +117,13 @@ export default function Home() {
   }, [])
 
   const handleLogout = async () => {
-    // No-op in no-auth mode — just reload the page
-    window.location.reload()
+    await fetch('/api/auth/logout', { method: 'POST' })
+    setUser(null)
+    setShowLogin(true)
   }
 
-  // Loading screen while auto-creating org + admin
-  if (loading || !user) {
+  // Loading screen while checking auth
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -118,6 +134,11 @@ export default function Home() {
         </div>
       </div>
     )
+  }
+
+  // Show login screen if not authenticated
+  if (showLogin && !user) {
+    return <LoginView onSuccess={(u) => { setUser(u); setShowLogin(false) }} />
   }
 
   return (
