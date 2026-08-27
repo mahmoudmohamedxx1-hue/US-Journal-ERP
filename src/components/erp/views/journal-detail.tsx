@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/erp/confirm-dialog'
+import { CreditNoteButton } from '@/components/erp/admin-widgets'
 
 interface JournalDetail {
   id: string
@@ -373,6 +374,9 @@ export function JournalDetailView() {
                   {actionLoading === 'reverse' ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-1.5 h-4 w-4" />}
                   Reverse Journal
                 </Button>
+              )}
+              {journal.status === 'Posted' && (
+                <CreditNoteButton journalId={journal.id} onCreated={() => load()} />
               )}
               <Separator className="my-2" />
               <Button

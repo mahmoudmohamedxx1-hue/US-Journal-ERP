@@ -32,6 +32,7 @@ import { formatMoney, formatCompact, formatDate, STATUS_META, type JournalStatus
 import { KpiCard } from '@/components/erp/kpi-card'
 import { StatusBadge } from '@/components/erp/status-badge'
 import { AICommentaryWidget } from '@/components/erp/ai-commentary-widget'
+import { OnboardingWidget, KpiSummaryWidget } from '@/components/erp/admin-widgets'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -160,6 +161,10 @@ export function DashboardView() {
       </div>
 
       <AICommentaryWidget />
+
+      <OnboardingWidget />
+
+      <KpiSummaryWidget />
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-2">

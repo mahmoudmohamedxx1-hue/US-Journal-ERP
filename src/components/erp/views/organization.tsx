@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
+import { LockDatesSettings, IntegrityCheckPanel } from '@/components/erp/admin-widgets'
 
 export function OrganizationView() {
   const [org, setOrg] = React.useState<any>(null)
@@ -97,6 +98,12 @@ export function OrganizationView() {
           <Info label="Multi-tenant" value={<Badge variant="outline" className="text-[10px]">Enabled</Badge>} />
         </CardContent>
       </Card>
+
+      {/* Lock Dates — Odoo's 5-level lock system */}
+      <LockDatesSettings />
+
+      {/* Integrity Check — system health verification */}
+      <IntegrityCheckPanel />
     </div>
   )
 }

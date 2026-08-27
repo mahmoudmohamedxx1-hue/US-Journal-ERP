@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/erp/kpi-card'
 import { CreateFormDialog } from '@/components/erp/create-form-dialog'
+import { BankStatementImport } from '@/components/erp/admin-widgets'
 
 export function BankingView() {
   const [accounts, setAccounts] = React.useState<any[]>([])
@@ -38,10 +39,13 @@ export function BankingView() {
             Bank account balances and recent transactions. Reconciliation status per transaction.
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Add Account
-        </Button>
+        <div className="flex gap-2">
+          <BankStatementImport bankAccountId={accounts[0]?.id} onImported={() => load()} />
+          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add Account
+          </Button>
+        </div>
       </div>
 
       <KpiCard label="Total Cash Position" value={formatMoney(totalBalance)} hint="across all accounts" icon={<Landmark className="h-4 w-4" />} variant="accent" />
