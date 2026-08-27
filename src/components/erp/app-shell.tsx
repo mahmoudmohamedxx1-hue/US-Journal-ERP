@@ -168,9 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const handleLogout = () => {
-    if (confirm("Log out?")) {
-      fetch("/api/auth/logout", { method: "POST" }).then(() => window.location.reload())
-    }
+    window.location.reload()
   }
 
   return (
