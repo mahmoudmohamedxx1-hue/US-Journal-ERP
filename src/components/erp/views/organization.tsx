@@ -34,9 +34,22 @@ export function OrganizationView() {
 
   const save = async () => {
     setSaving(true)
-    // Save to database via real API
-    toast.success('Organization settings saved (demo)')
-    setSaving(false)
+    try {
+      const res = await fetch('/api/organization/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error || 'Failed')
+      }
+      toast.success('Organization settings saved')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) return <Skeleton className="h-96 w-full" />
