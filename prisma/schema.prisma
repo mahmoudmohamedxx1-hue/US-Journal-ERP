@@ -3,9 +3,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
+  // For PostgreSQL (Vercel/cloud), set DATABASE_URL to a postgres:// connection string
+  // and change provider to "postgresql"
+  // For local dev, use SQLite: DATABASE_URL=file:./db/custom.db
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }

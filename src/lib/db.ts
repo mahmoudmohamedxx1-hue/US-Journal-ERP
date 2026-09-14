@@ -1,58 +1,57 @@
-import { PrismaClient } from '@prisma/client'
-import * as path from 'path'
-import * as fs from 'fs'
-
-const { mkdirSync, existsSync } = fs
-const { dirname, resolve } = path
-
 /**
- * Resolve the SQLite database path from DATABASE_URL.
+ * Database connection module — works in both desktop (SQLite) and cloud (PostgreSQL) modes.
  *
- * Supports:
- *   - file:./db/custom.db        (relative to cwd)
- *   - file:/abs/path/custom.db   (absolute)
- *   - file:${appData}/...         (Electron userData placeholder, replaced at runtime)
+ * - Desktop: DATABASE_URL=file:./db/custom.db (SQLite, auto-creates directory)
+ * - Vercel/Cloud: DATABASE_URL=postgresql://... (PostgreSQL via Prisma)
  *
- * Auto-creates the parent directory if missing — fixes:
- *   "PrismaClientInitializationError: Unable to open the database file"
- * which happened when the directory didn't exist (e.g. fresh CI run,
- * fresh desktop install, or containerized dev environment).
+ * On Vercel, the filesystem is read-only except /tmp, so we can't use SQLite.
+ * The environment variable DATABASE_URL determines which database to use.
  */
-function ensureDatabasePath() {
-  let url = process.env.DATABASE_URL
-  if (!url) {
-    // Fallback to a sane default — relative to project root
-    url = 'file:./db/custom.db'
-    process.env.DATABASE_URL = url
-  }
 
-  if (url.startsWith('file:')) {
-    let pathPart = url.slice('file:'.length)
-    // Strip query params (e.g. "?connection_limit=1")
-    const qIdx = pathPart.indexOf('?')
-    if (qIdx >= 0) pathPart = pathPart.slice(0, qIdx)
-
-    // Resolve relative paths against cwd
-    const dbPath = resolve(pathPart)
-    const dir = dirname(dbPath)
-    if (!existsSync(dir)) {
-      try {
-        mkdirSync(dir, { recursive: true })
-        console.log(`[db] Created database directory: ${dir}`)
-      } catch (e) {
-        console.error(`[db] Failed to create directory ${dir}:`, e)
-      }
-    }
-    // Normalize to absolute path so Prisma can reliably open it
-    process.env.DATABASE_URL = `file:${dbPath}`
-  }
-}
-
-ensureDatabasePath()
+import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
+
+function resolveDatabaseUrl() {
+  let url = process.env.DATABASE_URL
+
+  if (!url) {
+    // Default to SQLite for desktop mode
+    url = 'file:./db/custom.db'
+    process.env.DATABASE_URL = url
+  }
+
+  // Only resolve file paths for SQLite (not PostgreSQL)
+  if (url.startsWith('file:')) {
+    try {
+      const path = require('path')
+      const fs = require('fs')
+      let pathPart = url.slice('file:'.length)
+      const qIdx = pathPart.indexOf('?')
+      if (qIdx >= 0) pathPart = pathPart.slice(0, qIdx)
+
+      const dbPath = path.resolve(pathPart)
+      const dir = path.dirname(dbPath)
+      if (!fs.existsSync(dir)) {
+        try {
+          fs.mkdirSync(dir, { recursive: true })
+          console.log(`[db] Created database directory: ${dir}`)
+        } catch (e) {
+          console.error(`[db] Failed to create directory ${dir}:`, e)
+        }
+      }
+      process.env.DATABASE_URL = `file:${dbPath}`
+    } catch {
+      // If path/fs not available (edge runtime), just use the URL as-is
+    }
+  }
+
+  return url
+}
+
+resolveDatabaseUrl()
 
 export const db =
   globalForPrisma.prisma ??
@@ -60,4 +59,5 @@ export const db =
     log: process.env.NODE_ENV === 'production' ? ['error'] : ['error', 'warn'],
   })
 
+// Cache Prisma client in development to avoid connection exhaustion
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
