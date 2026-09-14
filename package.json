@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "bash scripts/vercel-build.sh",
+    "build": "node scripts/build.js",
     "start": "next start",
     "build:electron": "DEPLOY_TARGET=electron next build && node scripts/post-build.js",
     "start:electron": "NODE_ENV=production node .next/standalone/server.js",
