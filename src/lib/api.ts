@@ -32,6 +32,11 @@ let cachedContext: SystemContext | null = null
 export async function getSystemContext(): Promise<SystemContext> {
   if (cachedContext) return cachedContext
 
+  // Ensure DATABASE_URL is set
+  if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = 'file:./db/custom.db'
+  }
+
   // Find or create the organization.
   // Use a FIXED id to prevent duplicate orgs under concurrent startup.
   // (Previously used findFirst() + create(), which raced and created duplicates.)

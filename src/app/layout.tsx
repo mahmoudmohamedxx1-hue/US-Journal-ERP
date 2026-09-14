@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],

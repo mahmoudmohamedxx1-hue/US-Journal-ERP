@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import * as React from 'react'
 import { AppShell } from '@/components/erp/app-shell'
 import { useErpStore } from '@/lib/erp-store'
